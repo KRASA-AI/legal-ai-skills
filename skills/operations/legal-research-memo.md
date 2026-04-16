@@ -131,6 +131,7 @@ You are a legal research AI assistant. Your job is to produce a well-structured 
 - Professional formatting suitable for internal firm use
 - Ready for attorney review with minimal structural editing
 - Saved to `outputs/` if the user confirms
+- Before this memo is relied on by a partner or client, or cited in any filing, run the draft through the `ai-citation-verifier` skill. Every case citation and every direct quotation must be confirmed in a primary legal database; see `knowledge-base/best-practices/ai-hallucination-sanctions-2026.md` for the Q1 2026 enforcement context.
 
 ## Example Output
 

@@ -13,21 +13,24 @@ This repo is a complete AI toolkit for legal. Every skill is a standalone prompt
 
 | Skill | What it does | Time saved |
 |-------|-------------|------------|
+| AI Citation & Quote Verifier | Run a pre-filing sweep over a draft brief, motion, memorandum, or letter to catch fabricated or misused authorities before they reach a court, regulator, or opposing counsel. | ~45 min/brief |
 | Contract Clause Analyzer | Analyze an uploaded contract to flag risky clauses, identify missing standard provisions, highlight unusual terms, and produce a structured risk report with severity ratings and recommended revisions. | ~30 min/contract |
 | Demand Letter Drafter | Generate a first-draft demand letter from case facts, legal basis, and desired outcome — formatted as a professional attorney letter ready for review, customization, and sending on firm letterhead. | ~30 min/letter |
-| Deposition Prep Outline | Create a structured deposition question outline based on case documents and key issues, with optional cross-testimony contradiction analysis when multiple prior statements or transcripts are available. | ~45 min/depo |
+| Deposition Prep Outline | Create a structured deposition question outline tailored to the deposition type (fact witness, party, 30(b)(6) corporate representative, expert, or hostile/adverse), with cross-testimony contradiction analysis when multiple prior statements are available. | ~45 min/depo |
+| Discovery Response Drafter | Draft first-pass written responses and objections to propounded discovery — interrogatories, requests for production, and requests for admission — so that a responding attorney can review, refine, and finalize rather than start from a blank page. | ~60 min per discovery set |
 | Legal Research Memo | Draft a structured legal research memorandum analyzing a specific legal question, applying relevant statutes and case law to the client's facts, and providing a reasoned conclusion with risk assessment. | ~60 min/memo |
 | NDA Triage | Rapidly classify incoming non-disclosure agreements into three action lanes — approve, counsel review, or escalate — based on configured playbook criteria. | ~20 min/NDA |
+| Privilege Log Reviewer | Assist a reviewing attorney in classifying documents as privileged, partially privileged (redact), or non-privileged, and in generating a defensible, metadata-grounded privilege log entry for each document marked privileged. | ~45 min per 100 documents |
 | Regulatory Compliance Checker | Scan contracts, policies, or internal documents against specific regulatory frameworks (GDPR, CCPA, HIPAA, EU AI Act, ABA Model Rules, etc.) and produce a structured compliance gap report with risk ratings and remediation suggestions. | ~45 min/review |
 | Legal Response Templates | Draft standardized first responses to recurring legal inquiries — data subject access requests (DSARs), litigation/discovery holds, vendor security or legal questionnaires, third-party subpoenas, NDA requests, and other repeat categories — using configured templates, variable substitution, and built-in escalation logic so routine matters can be handled quickly while genuinely unusual matters are routed to counsel. | ~25 min/response |
-| Client Intake Summary | Turn intake notes into a structured matter summary with key dates, parties, and issues. | ~15 min/intake |
+| Client Intake Summary | Turn raw intake notes — from a phone consultation, intake form, referral email, or walk-in conversation — into a structured matter summary that is ready to drive a conflict check, engagement-letter decision, calendar entry for critical deadlines (especially statute of limitations), and assignment of the matter to the right timekeeper. | ~15 min/intake |
 | Document Intake Extractor | Transform unstructured client submissions — emails, meeting notes, voicemail transcripts, scanned documents, or term sheets — into structured matter data with key fields populated, gaps flagged, and a follow-up checklist generated. | ~20 min/intake |
-| Time Entry Cleaner | Rewrite vague time entries into detailed, billing-guideline-compliant descriptions. | ~10 min/batch |
+| Time Entry Cleaner | Rewrite a batch of raw, vague, or non-compliant timekeeper entries into billing-guideline-compliant descriptions that comply with LEDES e-billing formats, UTBMS task and activity codes, ABA billing best practices, and typical outside-counsel billing guidelines. | ~10 min/batch |
 | Email Drafter | Turn rough notes, dictation, or a bullet list into a polished legal email — matched to the sender's role, the recipient's posture, the applicable privilege regime, and the firm's voice. | ~10 min/use |
 | Meeting Summarizer | Turn raw meeting notes, dictation, or a transcript into a structured legal meeting summary — correctly tagged with the matter number, privilege designation, billable-time entries, attendees, decisions, open questions, and action items with assigned owners and deadlines. | ~15 min/meeting |
 | Review Responder | Draft a professional, bar-compliant response to an online review of a law firm, attorney, or legal service — calibrated to the platform's conventions and the ethical constraints that bind attorney responses. | ~15 min/response |
 
-**Total time saved per use: ~340+ minutes across all skills.**
+**Total time saved per use: ~490+ minutes across all skills.**
 
 ## Quick Start
 
