@@ -71,3 +71,4 @@ High-risk AI provisions require organizations to implement risk assessments, doc
 
 - `knowledge-base/best-practices/ai-hallucination-sanctions-2026.md` — Q1 2026 enforcement landscape, including the *Brigandi* matter and the Oregon Court of Appeals per-infraction tariff. Read in conjunction with this entry when setting verification-pass policy.
 - `skills/operations/ai-citation-verifier.md` — pre-filing sweep skill that operationalizes the verification duty under FRCP 11 and RPC 3.3.
+- `skills/operations/deposition-transcript-analyzer.md` — Tier 3 AI use over deposition transcripts (typically privileged-adjacent and protective-order designated). The skill includes a traceability rule that anchors every quoted or paraphrased item to a page:line cite, mirroring the verification-by-design pattern of the citation verifier.

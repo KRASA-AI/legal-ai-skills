@@ -197,6 +197,10 @@ The defending variant must contain **no coaching on the substance of answers** â
 - Work product designation applied; never produce or share outside the firm
 - Saved to `outputs/depositions/[matter-id]-[deponent-last-name]-[YYYY-MM-DD].md` if the user confirms
 
+**Companion skill:**
+
+After the deposition is taken and the transcript is back, run `skills/operations/deposition-transcript-analyzer.md` to produce the page/line-cited summary, contradiction index, key-admissions ledger, and impeachment map for trial and motion practice. The two skills share the same Foundation / Confront / Commit impeachment grammar so the prep-side outline and the post-deposition analysis stay aligned.
+
 ## Example Output
 
 > [This section will be populated by the eval system with a reference example. For now, run the skill with sample documents and prior statements to see output quality.]
