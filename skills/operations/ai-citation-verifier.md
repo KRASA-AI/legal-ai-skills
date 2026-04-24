@@ -176,6 +176,10 @@ Signed: ____________________    Date: ____________
 - Save the sweep output to `outputs/citation-verification/[matter-id]-[YYYY-MM-DD].md` if the user confirms.
 - Cross-reference `knowledge-base/best-practices/ai-governance-legal.md` (general governance) and `knowledge-base/best-practices/ai-hallucination-sanctions-2026.md` (sanctions landscape) in the certification checklist.
 
+## Companion Skill — Pre-Filing Independent Review
+
+This skill is the *drafter-side* sweep. It is not the last line of defense for high-stakes filings. For any Tier 3 filing — appellate briefs, emergency motions, sanctions responses, motions for summary judgment, Daubert motions, any filing signed by a partner in a matter with sophisticated opposing counsel, and any filing in which a generative AI tool touched the draft at any stage — the drafter-side sweep must be followed by an institutional pass run by an attorney who did not draft, edit, or direct the drafting of the filing. That pass is `skills/operations/pre-filing-independent-review.md`. The S.D.N.Y. Bankruptcy Court *Prince Group* apology letter of April 2026 documents the failure mode this companion skill was designed to address: a firm's own drafter-side citation-checking processes ran, did not catch the problems, and the filing shipped with approximately 40 errors that opposing counsel later surfaced. The firm's written AI policy existed; the policy was not followed on the specific filing; and there was no institutional checkpoint between the drafter-side sweep and the clerk's filing window.
+
 ## Example Output
 
 > [This section will be populated by the eval system with a reference example. For now, run the skill with a sample draft and jurisdiction to see output quality.]
