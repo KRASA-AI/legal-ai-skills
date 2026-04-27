@@ -4,8 +4,8 @@ category: _shared
 tools: [claude, chatgpt]
 difficulty: beginner
 time_saved: "~15 min/meeting"
-version: 2.0
-last_eval_score: 4.00
+version: 2.2
+last_eval_score: 8.90
 ---
 
 # Meeting Summarizer
@@ -78,7 +78,23 @@ If the user marks the meeting's privilege posture inconsistently with the type's
 5. **Capture commitments as action items** — Every action item needs: owner, deliverable, deadline. If any of these is missing from the transcript, mark it `[[VERIFY]]` rather than guessing.
 6. **Flag statements that could become admissions** — For non-privileged meetings (meet-and-confer, deal negotiation), any statement that could be cited back ("we admit we were late," "we'll waive that defense") should be highlighted for attorney attention.
 7. **Produce billable-time suggestions** (if flagged) — Draft LEDES-style entries for each attorney attendee: date, timekeeper ID, UTBMS task code, UTBMS activity code, duration (from meeting duration), description. Use conservative descriptions ("Attend team meeting re: [matter topic]") that comply with typical client billing guidelines (no block billing, no vague "conferencing").
-8. **Produce the summary** — Follow the output format below. Stay tight — a good summary is a page, not five.
+8. **Apply the archetype-specific output template override** (see table below) — each meeting type drops a different block at the end of the summary; the standard shell is the same for every type, but the trailing block is tuned to what the matter team will actually do with the summary.
+9. **Produce the summary** — Follow the output format below. Stay tight — a good summary is a page, not five.
+
+**Archetype-specific output-template overrides (loaded by meeting type):**
+
+| Meeting type | Trailing block(s) appended | What it captures |
+|--------------|----------------------------|------------------|
+| Client intake | `## Engagement-Decision Framework`, `## Conflict-Check Trigger List` | Sufficient-information-to-quote test; engage / decline / refer recommendation; named conflict-check entries (parties, related entities, adverse witnesses, prior counsel) |
+| Case strategy / matter team | `## Strategy-Forward Risks`, `## Decision Tree`, `## Open Tasks With Assigned Lead` | Top three risks raised; if-this-then-that branches discussed; lead-attorney sign-off per task |
+| Client status / update call | `## What This Means For The Client`, `## Recommended Next Steps`, `## Client Decision Items Pending` | Plain-language translation; firm's recommended actions; items where the client owes the firm a decision |
+| Deposition prep | `## Witness Theme Map`, `## Likely Cross-Examination Areas`, `## Witness's Strongest / Weakest Answers Today`, `## Coaching-vs-Substance Boundary Notes` | Themes the witness will lean on; areas opposing counsel will probe; how the witness performed; explicit ethics boundary on what was practiced vs. coached |
+| Settlement / mediation | `## Authority Granted By Client`, `## Settlement Range Confirmed`, `## Open Items Going Back To Mediator`, `## Mediation-Privilege Scope Note` | What the attorney is authorized to commit; the client-confirmed bottom line; remaining mediator follow-ups; whether the privilege covers all segments of the meeting |
+| Opposing counsel meet-and-confer | `## Rule 26(f) Report Items`, `## Meet-and-Confer Certifications Required`, `## Disputes Preserved For Motion`, `## On-The-Record Statements By Opposing Counsel` | Items requiring the joint Rule 26(f) report; FRCP 37(a) certification language; disputes for which the firm preserved the motion right; statements opposing counsel made that bind the other side |
+| Internal firm | `## Practice-Group Action Items`, `## Cross-Matter Spillovers` | Items affecting the practice group; risks or opportunities affecting other matters |
+| Deal negotiation | `## Open Redline Items`, `## Concessions Offered / Refused`, `## Term-Sheet Updates`, `## Binding-vs-Non-Binding Status Of Each Concession` | Items still open for redline; trade-offs made; updates to term sheet; whether each concession was made subject to overall agreement (and therefore non-binding) or unconditionally |
+
+The standard shell (Attendees / Summary by Topic / Decisions / Open Questions / Action Items / Suggested Time Entries / Privilege Footer / Reviewer Notes) is always present. The archetype-specific block sits between Action Items and Suggested Time Entries.
 
 **Output format:**
 
@@ -120,6 +136,9 @@ If the user marks the meeting's privilege posture inconsistently with the type's
 ## Admissions / Commitments (non-privileged meetings only)
 [Highlighted statements that could be cited back in later proceedings.]
 
+## [Archetype-Specific Block — pulled from the archetype override table above]
+[E.g., for a client-intake call: Engagement-Decision Framework + Conflict-Check Trigger List. For a meet-and-confer: Rule 26(f) Report Items + Disputes Preserved For Motion. The block name and contents are determined by the meeting type; never omit.]
+
 ## Suggested Time Entries (if flagged)
 | Timekeeper | Date | Duration | UTBMS Task | UTBMS Activity | Description |
 |------------|------|----------|------------|----------------|-------------|
@@ -139,8 +158,26 @@ If the user marks the meeting's privilege posture inconsistently with the type's
 - Never expand, soften, or re-characterize what attendees said — capture it as spoken
 - Use `[[VERIFY]]` for any deadline, owner, dollar amount, or citation not in the raw input
 - Always mark the privilege posture; never produce a "mixed" summary without flagging which segments are which
+- Always include the archetype-specific trailing block — never reduce a meet-and-confer to a generic summary; the Rule 26(f) items / disputes preserved are non-negotiable for that archetype
 - Billable entries must be LEDES/UTBMS-compliant when requested; no block billing
-- Saved to `outputs/` if the user confirms
+- Saved to `outputs/meetings/[matter-id]-[YYYY-MM-DD]-[meeting-type].md` if the user confirms
+
+## Firm Config Keys Used
+
+The summarizer pulls these keys from `config.yml` at runtime:
+
+- `firm.name` — appears in the privilege footer when applicable
+- `firm.matter_number_format` — drives the matter-tag rendered at the top of the summary
+- `firm.privilege_footer.attorney_client` — substituted into AC-privileged summaries
+- `firm.privilege_footer.work_product` — substituted into work-product-designated summaries
+- `firm.privilege_footer.mediation` — substituted into mediation-privileged summaries (jurisdiction-specific)
+- `firm.timekeeper_rate_table` — drives suggested LEDES entries for attorney attendees (timekeeper ID, default UTBMS task/activity, hourly rate for budget-tracking only — never inserted into the time entry itself)
+- `firm.utbms.task_codes` — firm-confirmed UTBMS L-codes the timekeeper is permitted to use on this matter type
+- `firm.utbms.activity_codes` — firm-confirmed UTBMS A-codes
+- `firm.client_billing_guidelines.[client_id]` — overrides default block-billing rules with the client's specific OCG (e.g., minimum-increment, no-internal-conferences ban, no-staffing-ratios cap)
+- `firm.distribution_lists.[matter_id]` — preconfigured "internal only / client / opposing counsel / file only" routing
+
+If a key is absent from `config.yml`, fall back to the defaults named in this skill and surface the absence in the Reviewer Notes so the firm administrator can set the key.
 
 ## Example Output
 

@@ -68,12 +68,27 @@ Based on the reported pilots and near-misses through April 2026, the common agen
 - **Overclaim cascade.** A privilege call in Phase 2 propagates into Phase 3 drafting without a re-review. Guard: every PRIVILEGED or REDACT call has its own attorney sign-off and is not re-used without that sign-off.
 - **Speed-to-served pressure.** Because the agent produced a draft fast, the responsible attorney feels comfortable compressing review time. Guard: the drafting gate's minimum review standard is absolute — no agent speed justifies skipping it.
 
+## Notes on watch — agent-counterparty transactions
+
+The framework above covers AI agents acting *inside* a firm's workflow, with the firm and its attorneys as the principals. A separate vector is now appearing in the public commentary: AI agents acting as counterparty proxies in transactions — placing offers, accepting offers, and binding their human principals to the terms reached. Anthropic's April 24, 2026 *Project Deal* experiment, in which 69 employees authorized AI agents to execute purchase-and-sale exchanges on their behalf and 186 deals closed at a total transaction value of just over $4,000, is the public marker for this pattern. The Legal IT Insider commentary on the experiment frames the legal-frameworks gap explicitly: contract formation, capacity, authority, and enforceability rules were not drafted with autonomous agents in mind.
+
+This pattern is upstream of the skills in this repository — none of the skills in `operations/`, `admin/`, or `customer-service/` is designed to advise counterparties whose agents are themselves AI. But it surfaces issues that the firm should be ready to address when a client asks, when the firm itself enters an agent-mediated transaction (procurement, marketplace, or platform-routed deal), or when an agent-mediated transaction surfaces in litigation:
+
+- **Authority and ratification.** Did the principal authorize the specific transaction or only a class of transactions? Is there a signed ratification step, and if so does it cure an out-of-scope agent action? The firm's counterparty work should not assume the answer is yes by default.
+- **Formation and assent.** Whose objective manifestation of assent counts when both sides of the negotiation are AI? Click-through analogues (the National Law Review's "Who's Really Clicking 'Accept'?" framing) and the older mailbox-rule tradition both apply imperfectly. Counsel should review and document the formation theory the client is relying on before the platform launches.
+- **Identity, KYC, and binding signature.** Where an agent acts on behalf of a regulated principal (broker-dealer, escrow agent, lender), the agent's identity, its authority, and its signature are open compliance items. Existing KYC and signature-block practice should be updated to address agent-mediated transactions explicitly.
+- **Liability allocation.** Where an agent over-pays, under-delivers, leaks confidential terms, or is induced via prompt injection, allocation across principal, deploying organization, and tool vendor is unsettled. Standard indemnities and limitations of liability written for passive software typically do not cover the agent case.
+- **Audit and traceability.** Records of prompts, decisions, and tool calls become primary evidence when an agent transaction is challenged. The orchestrator-responsibility points above (validate inputs, log every step, stop on ESCALATE) translate directly into the agent-counterparty setting; firms advising clients on agent deployments should require the same orchestration discipline of the client.
+
+This is a notes-on-watch item, not a skill. The repo's `contract-clause-analyzer`, `nda-triage`, and `regulatory-compliance-checker` skills already carry the matter-context fields a future skill could extend; the practical near-term step is to expect counterparty AI-agent provisions in client requests for advice and to draft a firm-level take on each of the five items above before the first matter forces it.
+
 ## Open questions
 
 - Appellate treatment of AI-generated work product after *United States v. Heppner* (S.D.N.Y. Feb 2026) — update `ai-privilege-and-work-product.md` as decisions come in.
 - The right audit-log format for agent workflows in eDiscovery — whether a dedicated run log produced by the orchestrator is itself discoverable, and whether it should be work product or a business record.
 - Whether a firm should disclose agentic workflow use to clients in the engagement letter, beyond the existing AI-use disclosure. Current practice is split.
 - How to map agentic workflow time to LEDES/UTBMS billing codes given that an agent may complete in minutes what was historically billed in hours.
+- Agent-counterparty transactions (above): when this pattern produces its first reported dispute, the formation, authority, and liability allocation questions move from notes-on-watch to a candidate stand-alone KB entry.
 
 ## Cross-references
 
@@ -83,4 +98,4 @@ Based on the reported pilots and near-misses through April 2026, the common agen
 - `skills/operations/discovery-response-drafter.md` — the skill that consumes privilege calls and must not re-use them without attorney sign-off
 - `skills/operations/nda-triage.md`, `skills/operations/contract-clause-analyzer.md`, `skills/customer-service/legal-response-templates.md` — playbook-configurable skills that are preferred inputs for agent workflows
 
-*Last updated: 2026-04-14.*
+*Last updated: 2026-04-27.*

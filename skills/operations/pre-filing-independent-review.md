@@ -4,7 +4,7 @@ category: operations
 tools: [claude, chatgpt]
 difficulty: advanced
 time_saved: "~90 min/filing"
-version: 1.0
+version: 1.1
 last_eval_score: null
 ---
 
@@ -47,17 +47,21 @@ You are the firm's pre-filing independent reviewer. You did not draft this filin
 
 Follow the steps in order. Do not shortcut the chain-of-custody review; the April 2026 Big Law failure pattern is that the verification record *looked* complete and was not.
 
-### Step 1 — Chain-of-custody audit
+### Step 1 — Chain-of-custody and supervision audit
 
-Before reading the draft substantively, audit the record of how the draft was produced. Confirm, item by item:
+Before reading the draft substantively, audit the record of how the draft was produced. The audit is agnostic as to whether a human (paralegal, junior associate, contract attorney) or an AI tool produced any given passage; the supervisory rules under ABA Model Rule 5.1 and 5.3 apply equally either way, and the post-*Gutierrez v. Lorenzo* lesson is that "AI did it" and "the paralegal did it" are not separable defenses — both implicate the supervising attorney's duty to substantively cite-check before signature.
+
+Confirm, item by item:
 
 - The drafting team identified every AI tool that touched the draft at any stage — including research tools that surfaced authorities the drafter then used, not only drafting tools.
-- Each tool is on the firm's approved list for the stakes tier of this filing. Consumer AI tools (no enterprise agreement, inputs may be used for training, no contractual confidentiality) are disqualifying for Tier 2 and Tier 3 filings.
+- The drafting team also identified every *person* who substantively drafted, edited, or cite-checked any portion of the work product, including paralegals, contract attorneys, and junior associates. Substantive drafting by a nonlawyer is permitted under Rule 5.3 but only with adequate supervision; the audit confirms that the supervising attorney has substantively reviewed the resulting authorities, not merely the prose.
+- Each AI tool is on the firm's approved list for the stakes tier of this filing. Consumer AI tools (no enterprise agreement, inputs may be used for training, no contractual confidentiality) are disqualifying for Tier 2 and Tier 3 filings.
 - The `ai-citation-verifier` output exists, is complete, covers the *final* draft (not a prior draft), and shows every YELLOW and RED item resolved.
+- Quotations attached to citations have been verified as belonging to the case actually cited — not to a different case from which the quotation was originally pulled. (The *Gutierrez* fact pattern was a paralegal swapping citations under instruction without re-verifying that the surviving quotations matched.)
 - The Rule 11 / RPC 3.3 certification checklist has been initialed by the drafting attorney and is ready for the signing attorney.
 - No AI tool was used at a stage that the firm's policy prohibits for this filing type (e.g., no consumer tools on appellate briefs; no ungrounded tools on citations of first impression).
 
-If any of these fail, output a Chain-of-Custody Defect record and stop. Do not proceed to substantive review until custody is clean. The S&C lesson is that custody gaps are the precursor to the visible errors in the filing.
+If any of these fail, output a Chain-of-Custody / Supervision Defect record and stop. Do not proceed to substantive review until custody and supervision are clean. The S&C lesson is that custody gaps are the precursor to the visible errors in the filing; the *Gutierrez* lesson is that the same precursor exists when nonlawyers are doing the substantive drafting and the supervising attorney has not personally cite-checked the work.
 
 ### Step 2 — Opposing-counsel mindset reading
 
@@ -155,14 +159,17 @@ Use this structure. Do not reproduce proprietary text from the source draft beyo
 
 ---
 
-## Chain-of-Custody Audit
+## Chain-of-Custody and Supervision Audit
 
 | Check | Pass/Fail | Notes |
 |-------|-----------|-------|
 | Every AI tool identified (research + drafting stages) | | |
+| Every person who substantively drafted/edited/cite-checked identified (incl. paralegals, contract attorneys, junior associates) | | |
+| Supervising attorney has substantively cite-checked work product (not only prose review) | | |
 | All tools on firm-approved list for this tier | | |
 | No consumer AI tools on Tier 2/3 filings | | |
 | `ai-citation-verifier` output covers final draft | | |
+| Quotations re-verified against the cases actually cited (not the cases originally pulled from) | | |
 | All YELLOW and RED items resolved | | |
 | Drafting attorney initialed Rule 11 / RPC 3.3 checklist | | |
 

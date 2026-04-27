@@ -4,8 +4,8 @@ category: _shared
 tools: [claude, chatgpt]
 difficulty: beginner
 time_saved: "~10 min/use"
-version: 2.0
-last_eval_score: 4.00
+version: 2.1
+last_eval_score: 8.90
 ---
 
 # Email Drafter
@@ -124,7 +124,22 @@ Best regards,
 - Always mark the privilege posture, even for non-privileged archetypes
 - Preserve the firm's voice as configured in `config.yml`
 - Professional formatting with a clean subject line and signature
-- Saved to `outputs/` if the user confirms
+- Saved to `outputs/email/[matter-id]-[YYYY-MM-DD]-[slug].md` if the user confirms
+
+## Firm Config Keys Used
+
+The drafter pulls these keys from `config.yml` at runtime:
+
+- `firm.name` — appears in the signature block and the privilege footer
+- `firm.voice` — drives word choice and hedging style (formal / plain / warm)
+- `firm.signature_blocks.[role]` — per-role signature template (partner / associate / paralegal / GC / in-house)
+- `firm.bar_admissions.[attorney_id]` — bar jurisdictions appended to the signature for the named sender
+- `firm.privilege_footer` — overrides the default footer when set
+- `firm.matter_number_format` — drives the `[Matter 2026-042 — Smith v. Acme]` subject-line tag format
+- `firm.kovel_engagement_clause` — pasted into expert/vendor archetype emails when the engagement is at the direction of counsel
+- `firm.opposing_counsel_default_footer` — non-privileged footer for opposing-counsel correspondence (e.g., "without waiver of any rights or defenses")
+
+If a key is absent from `config.yml`, fall back to the defaults named in this skill and surface the absence in the Reviewer Notes block so the firm administrator can set the key.
 
 ## Example Output
 

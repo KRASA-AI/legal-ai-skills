@@ -8,7 +8,7 @@ As AI tools become embedded in legal practice — from research and drafting to 
 
 ### 1. Attorney Accountability Remains Unchanged
 
-AI-generated output must always be reviewed by a qualified attorney before reliance or submission. The supervising attorney bears responsibility for accuracy, completeness, and compliance with professional obligations regardless of whether the work was AI-assisted.
+AI-generated output must always be reviewed by a qualified attorney before reliance or submission. The supervising attorney bears responsibility for accuracy, completeness, and compliance with professional obligations regardless of whether the work was AI-assisted. Rules 5.1 (lawyer supervision) and 5.3 (nonlawyer assistance) apply with equal force to AI tools, paralegals, junior associates, and any combination of the three. The 2026 *Gutierrez v. Lorenzo Food Group* (D.N.J.) opinion underscores that the supervisory-failure pattern courts punish in AI-citation cases is the same pattern they punish when AI is *not* involved — the duty is to substantively cite-check work product before signature, and "I trusted the [tool / paralegal / associate]" is not a defense.
 
 ### 2. Confidentiality and Privilege Protection
 
@@ -46,6 +46,24 @@ AI tools may reflect biases in training data. Legal teams should be aware of pot
 - Contract clause risk assessment on high-value deals
 - Deposition preparation and contradiction analysis
 - Any output that will be filed with a court or regulatory body
+
+## State Bar Rule Amendments (2026)
+
+State bars have moved through 2026 from informal guidance toward explicit AI-specific amendments to the Rules of Professional Conduct. The pacesetter is the California State Bar's Committee on Professional Responsibility and Conduct (COPRAC), which on March 13, 2026 approved proposed amendments to RPC 1.1 (competence), 1.4 (communication with clients), 1.6 (confidentiality), 3.3 (candor toward the tribunal), 5.1 (supervisory responsibilities of partners and managers), and 5.3 (responsibilities regarding nonlawyer assistance). The amendments make the AI applicability of each rule explicit rather than leaving lawyers to read it into the existing language. The amendments entered a 45-day public comment period after the March 13 approval. New York, Florida, Texas, and Illinois are the most likely next adopters; firms with multi-state footprints should track these dockets and update internal policies in step.
+
+## Malpractice Insurance and AI
+
+By April 2026, legal professional liability (LPL) carriers have begun appending AI-specific renewal questionnaires and, in some renewals, exclusionary endorsements where AI controls cannot be evidenced. Carrier underwriting questions now commonly cover whether the firm has a written AI Use Policy, whether AI vendors are inventoried with documented security practices and data-processing agreements, whether AI-assisted filings are logged by matter, and whether the firm runs a documented pre-filing independent review on appellate and emergency-motion work. The NAIC AI Model Bulletin had been adopted by 23 states plus the District of Columbia as of April 1, 2026, and is shaping carrier behavior across jurisdictions even where individual states have not yet codified specific requirements.
+
+The repo's `ai-citation-verifier` and `pre-filing-independent-review` outputs are written in a form that doubles as carrier-facing documentation: timestamped, attestation-style, with a named reviewer and a specific verification record. Firms should retain these records under their existing matter-file retention schedule and produce them as part of LPL renewal packages where requested.
+
+## Data Provenance and Defensibility
+
+Three 2026 developments push *data provenance* — the origin and integrity of the data an AI tool consumes and produces — into the governance frame:
+
+- **Hallucinated authorities** continue to be the dominant failure mode (see `ai-hallucination-sanctions-2026.md`).
+- **Privilege and waiver risk** turns on whether the AI tool is consumer or enterprise, who initiated the use, and whether the prompt or output is preserved (see `ai-privilege-and-work-product.md` after *Heppner* and *Warner v. Gilbarco*).
+- **Data poisoning** is emerging as a third axis, especially for AI-assisted document review. Adversarial actors may seed training corpora or document populations with corrupted material that nudges model behavior. For legal teams, this means the integrity of the data used by AI is now itself part of the defensibility analysis — alongside the prompt, the model, and the human verification step. Logging, sampling, and audit trails over AI-classified documents are the practical mitigations.
 
 ## EU AI Act Considerations (Effective August 2026)
 

@@ -4,8 +4,8 @@ category: admin
 tools: [claude, chatgpt]
 difficulty: beginner
 time_saved: "~10 min/batch"
-version: 2.0
-last_eval_score: 4.90
+version: 2.1
+last_eval_score: 9.10
 ---
 
 # Time Entry Cleaner
@@ -152,6 +152,34 @@ For each entry, assign:
 - Always flag block billing rather than silently splitting entries without timekeeper input
 - Preserve privilege — narratives should describe the task, not the strategy
 - Saved to `outputs/time/[matter-id]-[YYYY-MM].md` if the user confirms
+
+## Firm Config Keys Used
+
+The cleaner pulls these keys from `config.yml` at runtime:
+
+- `firm.name` — appears in the cleanup-report header
+- `firm.timekeeper_roster` — timekeeper IDs, names, roles (partner / counsel / senior associate / associate / paralegal / law clerk), and current rates; drives the **TK** column in the Before/After Table and the rate-by-role rendering when the firm requires per-timekeeper output rather than batch output
+- `firm.utbms.task_codes` — firm-confirmed UTBMS L-codes the firm permits on this matter type (some firms restrict L-codes by practice group); the skill assigns only from this list and flags any entry whose most-defensible L-code is not on the list
+- `firm.utbms.activity_codes` — firm-confirmed UTBMS A-codes; same enforcement
+- `firm.default_increment` — 0.1 (6 min) standard / 0.25 (15 min) for some clients / 0.05 if the firm allows; default rounding direction is *down to nearest increment* unless overridden by client OCG
+- `firm.non_billable_categories` — firm-wide non-billable categories (e.g., "internal training," "internal staffing meetings," "billing-software learning"); drives Non-Billable Moves Proposed
+- `firm.block_billing_thresholds.single_task_max_hours` — maximum duration for a single-task entry before block-billing flag fires (default 2.0; some firms use 3.0 with senior-attorney sign-off)
+- `firm.block_billing_thresholds.multi_activity_max_hours` — maximum duration for an entry covering more than one activity (default 1.0); drives the >1.0h-covering->2-activities flag in the compliance table
+- `firm.privilege_narrative_policy` — `task_only` (default; narratives describe the task, never the strategy) or `task_plus_minimal_purpose` (for firms whose clients accept brief purpose statements); drives whether the rewriting convention permits "for purposes of opposition to summary judgment"-style purpose clauses
+- `firm.client_billing_guidelines.{client_id}.minimum_increment` — overrides `firm.default_increment` for the specified client
+- `firm.client_billing_guidelines.{client_id}.non_billable_categories` — overrides or extends `firm.non_billable_categories` for the specified client (e.g., a client whose OCG forbids billing for paralegal time on all-attorney conferences)
+- `firm.client_billing_guidelines.{client_id}.conferencing_caps` — per-client maximum conference-attendee billable count (some OCGs cap to two billable timekeepers per internal call)
+- `firm.client_billing_guidelines.{client_id}.travel_policy` — `non_billable` / `half_rate` / `full_rate` / `flat_per_diem`; overrides default travel handling
+- `firm.client_billing_guidelines.{client_id}.narrative_minimum_words` — minimum narrative length for the client (some OCGs require ≥10 words)
+- `firm.client_billing_guidelines.{client_id}.auditor_vendor` — the e-billing auditor the client uses (LegalVIEW, BillingPoint, Legal Tracker, TyMetrix 360, Counselink, Bottomline); rendered in the cleanup-report header so the timekeeper sees the auditor whose heuristics drive the flagged-entries list
+
+If a key is absent from `config.yml`, fall back to the defaults named in this skill and surface the absence in the cleanup-report header so the billing coordinator can set the key. The total-input-equals-total-output guardrail is **never** overridden by config — adding, removing, or reassigning time is outside the skill's scope regardless of any client OCG that might appear to permit it.
+
+## Cross-References
+
+- `skills/_shared/meeting-summarizer.md` — the meeting summarizer's Suggested Time Entries block produces draft entries that flow into this skill for batch cleanup before billing close
+- `knowledge-base/terminology/utbms-codes.md` (if present) — the full UTBMS L- and A-code matrix this skill assigns from
+- `knowledge-base/best-practices/ai-governance-legal.md` — privilege-bleed-through guidance for narrative content
 
 ## Example Output
 

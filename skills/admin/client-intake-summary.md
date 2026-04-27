@@ -4,8 +4,8 @@ category: admin
 tools: [claude, chatgpt]
 difficulty: beginner
 time_saved: "~15 min/intake"
-version: 2.0
-last_eval_score: 5.60
+version: 2.1
+last_eval_score: 9.10
 ---
 
 # Client Intake Summary
@@ -164,6 +164,32 @@ Each matter type has a required-field pack. Populate every field — if the note
 - Use `[[VERIFY]]` for any fact not in the raw notes
 - Preserve prospective-client confidentiality — do not circulate until conflict clears
 - Saved to `outputs/intake/[YYYY-MM-DD]-[last-name].md` if the user confirms
+
+## Firm Config Keys Used
+
+The intake summarizer pulls these keys from `config.yml` at runtime:
+
+- `firm.name` — appears in the candidate engagement-letter and matter-number stubs
+- `firm.matter_number_format` — drives the candidate matter-number rendered in the header (default `YYYY-NNNN`); accepts firm-specific formats (e.g., `[practice-area-code]-[YYYY]-[NNNN]`)
+- `firm.licensure_jurisdictions` — drives the **Firm licensure in governing jurisdiction** header line; flags Unfamiliar-Jurisdiction when the matter implicates a jurisdiction outside this list and recommends a Refer-Out posture in the Engagement-Decision Block
+- `firm.matter_types` — firm-supported matter types; if the classified type is outside this set, the skill flags Refer-Out rather than continuing with a field-pack the firm would not staff
+- `firm.intake_attorney_rotation.{date}` — which attorney is on intake duty on the intake date; rendered as the recommended next-step recipient in the Engagement-Decision Block
+- `firm.conflict_check_system` — vendor name or path of the firm's conflict-check tool (Aderant, Intapp Open, manual register, etc.); rendered in the Conflict-Check Trigger List block as the routing destination
+- `firm.engagement_letter_templates.{matter_type}` — matter-type-specific engagement-letter template path; surfaces in the Engagement-Letter Triggers block as the file the engagement attorney will pull
+- `firm.retainer_structures.{matter_type}` — default retainer structure for the matter type (standard / modified / flat / contingent / hybrid); rendered in the Engagement-Decision Block as the default retainer posture
+- `firm.referral_fee_policy` — firm's posture on referral fees (e.g., "no referral fees accepted" / "Rule 1.5(e) compliant only"); drives the Referral-obligations line in the Engagement-Decision Block
+- `firm.intake_record_retention.{matter_type}` — retention posture for declined-intake records (e.g., "retain 7 years for declined PI" / "destroy 30 days after decline for routine"); rendered in the Reviewer Notes when the matter is likely to be declined
+- `firm.sol_calculation_authority` — which knowledge-base path or module the skill consults for SOL math when the governing rule is implied (e.g., `knowledge-base/regulations/state-sol-calculator.md`); ensures every `[[CALCULATE SOL]]` flag points at a single firm-blessed source rather than ad-hoc lookup
+- `client.intake_overrides.{client_id}` — per-client overrides for existing-client matter expansions (e.g., a corporate client whose master engagement letter pre-clears a category of matters and skips a fresh engagement letter for in-scope new matters)
+
+If a key is absent from `config.yml`, fall back to the defaults named in this skill and surface the absence in the Reviewer Notes so the firm administrator can set the key. The candidate matter number is *always* a placeholder until the conflict check clears; the skill does not write to the firm's matter-numbering system at intake.
+
+## Cross-References
+
+- `skills/admin/document-intake-extractor.md` — when the intake includes documents (police report, medical records, contract, prior pleadings), run that skill on the documents and merge its field-pack output into this skill's Matter-Type Field Pack
+- `skills/operations/legal-research-memo.md` — once intake is cleared and an engagement is opened, this skill's Narrative Summary feeds the matter-context block of the legal-research-memo
+- `knowledge-base/regulations/` — primary source for matter-type-specific SOL and procedural deadlines
+- `knowledge-base/best-practices/ai-governance-legal.md` — Rule 1.18 prospective-client confidentiality guidance for pre-engagement matter handling
 
 ## Example Output
 

@@ -4,8 +4,8 @@ category: _shared
 tools: [claude, chatgpt]
 difficulty: beginner
 time_saved: "~15 min/response"
-version: 2.0
-last_eval_score: 4.00
+version: 2.1
+last_eval_score: 9.10
 ---
 
 # Review Responder
@@ -134,7 +134,31 @@ You are a legal reputation-management AI assistant. Your job is to draft a respo
 - Never identify a specific attorney's name as signer unless firm policy specifies
 - Always produce the ethics-compliance note, even for positive reviews
 - Always produce the escalation flag, even if NONE
-- Saved to `outputs/` if the user confirms
+- Saved to `outputs/reviews/[platform]-[YYYY-MM-DD]-[reviewer-handle].md` if the user confirms
+
+## Firm Config Keys Used
+
+The responder pulls these keys from `config.yml` at runtime:
+
+- `firm.name` — appears in the response signature when firm policy uses firm-name posture
+- `firm.voice` — adjective list governing tone (e.g., "warm, professional, non-defensive"); overrides the default tone calibration if set
+- `firm.review_signature_posture` — `firm_name` (default; the firm name signs the response) or `named_attorney` (rare; surfaces an individual attorney name) or `role_title` (e.g., "Marketing & Communications, Smith LLP"); drives the signature block
+- `firm.licensure_jurisdictions` — drives which state-bar ethics opinions are applied to the ethics check (NY State Bar 1032, Pennsylvania 2014-200, LA County 525, Texas Op. 662, California Op. 2018-196, etc.); flags Unfamiliar-Jurisdiction when the reviewer's location implicates a state outside this list
+- `firm.review_response_authorization` — list of roles authorized to post the response after the AI draft (e.g., `marketing_lead`, `general_counsel`, `managing_partner`); rendered in the deliverable so the firm-authorized poster is unambiguous
+- `firm.escalation_routing.general_counsel` / `firm.escalation_routing.risk_partner` / `firm.escalation_routing.outside_ethics_counsel` — routing for the escalation memo when the review alleges malpractice, ethics violation, or defamation
+- `firm.takedown_contacts.{platform}` — pre-configured platform-support contact, escalation path, or relationship manager for each platform (Google Business Profile, Avvo, Yelp, Martindale-Hubbell, Facebook Business, Super Lawyers, firm site CMS); used in the Platform Takedown Path block
+- `firm.platform_account_handles.{platform}` — the firm's claimed handle on each platform; surfaces in the Reviewer Notes if the platform-account-handles posture would affect attribution of the response
+- `firm.disclaimers.review_response` — appended to the Disclaimers block if the firm requires a standardized review-response disclaimer (some firms add a "responses do not constitute a representation that any individual was a client of the firm" line)
+- `firm.matter_number_format` — used only if the review references a matter and the firm wants the internal escalation memo tagged to that matter
+- `client.public_review_policy.{client_id}` — rare per-client overrides (e.g., a corporate client whose engagement letter restricts the firm from publicly identifying the client even in reviews referencing them by name)
+
+If a key is absent from `config.yml`, fall back to the defaults named in this skill and surface the absence in the Ethics Compliance Notes so the firm administrator can set the key. Prefer never identifying an individual attorney name in the signature unless `firm.review_signature_posture` is explicitly set to `named_attorney`; the default is firm-name posture because individual-attorney signatures expand personal ethics exposure.
+
+## Cross-References
+
+- `skills/operations/legal-response-templates.md` — escalate to this skill when the review embeds an inquiry that triggers a templated category (e.g., a reviewer's complaint that doubles as a DSAR or a litigation-hold notice)
+- `knowledge-base/regulations/` — primary source for state-bar ethics opinions on attorney review responses
+- `knowledge-base/best-practices/ai-governance-legal.md` — privilege and confidentiality guidance when a review references matter facts the firm is bound not to confirm
 
 ## Example Output
 
