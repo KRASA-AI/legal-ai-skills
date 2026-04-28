@@ -4,8 +4,8 @@ category: _shared
 tools: [claude, chatgpt]
 difficulty: beginner
 time_saved: "~15 min/meeting"
-version: 2.2
-last_eval_score: 8.90
+version: 2.3
+last_eval_score: 9.10
 ---
 
 # Meeting Summarizer
@@ -33,16 +33,18 @@ Do **not** use this skill to summarize meetings where the audio or transcript is
 
 ## Required Input
 
-Provide the following:
+Provide the following. Inputs marked **(fast-path)** can be defaulted from `config.yml` or inferred from the raw input itself; provide them only if the firm's default is wrong for this matter or the inference confidence is too low for the use case.
 
-1. **Meeting type** — Which archetype above (or "other — describe")
-2. **Matter context** — Matter number, client name, case caption if litigation
-3. **Date and duration** — For billable-time purposes
-4. **Attendees** — Names, roles (attorney / paralegal / client / opposing counsel / expert / witness / other), and for each attorney, whether they are timekeepers on this matter
-5. **Privilege posture** — Privileged (AC / WP) / Not privileged / Mixed (flag which segments)
-6. **Raw input** — Notes, dictation, transcript, or chat log
-7. **Billable flag** — Whether to produce suggested LEDES / UTBMS time entries for attendees
-8. **Distribution list** — Who will receive the summary (internal only, client, opposing counsel, file only)
+1. **Meeting type** — Which archetype above (or "other — describe") (required)
+2. **Raw input** — Notes, dictation, transcript, or chat log (required)
+3. **Matter context** — Matter number, client name, case caption if litigation. **(fast-path: skill will extract from the first matter reference in the raw input and validate against `firm.matter_number_format`; surfaces extracted vs. configured match in Reviewer Notes; explicit input only required when the raw input has no matter tag or the meeting spans multiple matters)**
+4. **Date and duration** — For billable-time purposes. **(fast-path: skill will extract from raw-input metadata, the recording header, or the first one or two lines; if duration is absent, falls back to `[[VERIFY: duration]]` and surfaces the gap in Reviewer Notes — never guesses a duration for billing purposes)**
+5. **Attendees** — Names, roles (attorney / paralegal / client / opposing counsel / expert / witness / other), and for each attorney, whether they are timekeepers on this matter. **(fast-path: skill will extract speaker labels from the raw input with HIGH/MEDIUM/LOW confidence per attendee; cross-references attorney attendees against `firm.timekeeper_rate_table` to set the timekeeper flag; LOW-confidence attendees are surfaced as `[[VERIFY: attendee]]` in Reviewer Notes)**
+6. **Privilege posture** — Privileged (AC / WP) / Not privileged / Mixed (flag which segments). **(fast-path: defaults to the meeting type's table-default — AC for client intake / status / settlement, work product for case strategy / depo prep, not privileged for meet-and-confer / deal negotiation, internal for internal firm; explicit input is required when the user's default conflicts with the table or when the meeting is "Mixed")**
+7. **Billable flag** — Whether to produce suggested LEDES / UTBMS time entries for attendees. **(fast-path: defaults to ON for any attendee identified as a timekeeper in `firm.timekeeper_rate_table`; attendees not on the rate table are excluded from time entries; defaults to OFF for client-status calls when `firm.client_billing_guidelines.{client_id}.no_internal_conferences` is set)**
+8. **Distribution list** — Who will receive the summary (internal only, client, opposing counsel, file only). **(fast-path: skill will read `firm.distribution_lists.{matter_id}` if configured; otherwise falls back to the privilege-posture default — "Internal only" for AC / WP / Mixed, "Client" for client-status calls, "All counsel" for meet-and-confer; surfaces the routing source in Reviewer Notes)**
+
+The minimum viable input is items 1–2; the skill produces a useful summary from meeting type + raw input alone, surfacing every defaulted value, every inferred attendee, and every fast-path source in the Reviewer Notes block so the attorney can see and override before distribution.
 
 ## Instructions
 
@@ -50,9 +52,11 @@ You are a legal meeting documentation AI assistant. Your job is to produce a str
 
 **Before you start:**
 
-- Load `config.yml` for firm name, default privilege footer, timekeeper rate table, and matter-number format
+- Load `config.yml` for firm name, default privilege footer, timekeeper rate table, matter-number format, distribution lists, and client-specific billing guidelines
 - Reference `knowledge-base/best-practices/ai-governance-legal.md` before processing privileged content
 - Reference `knowledge-base/terminology/` when the matter touches a specific practice area
+- Pull matter context, date/duration, attendees, privilege posture, billable flag, and distribution list via the fast-path defaults if the user did not supply them; surface every defaulted, inferred, or low-confidence value in the Reviewer Notes block so the reviewing attorney sees every assumption before distribution
+- Never default a value that, if wrong, would put the meeting summary on the wrong distribution list — when the privilege posture or distribution list is ambiguous (for example, a client-status call that drifted into mediation strategy), pause and request confirmation rather than choosing the riskier default
 
 **Privilege & disclosure rules:**
 
@@ -147,7 +151,15 @@ The standard shell (Attendees / Summary by Topic / Decisions / Open Questions / 
 ## Privilege Footer
 [Standard firm footer when privileged.]
 
-## Reviewer Notes
+## Reviewer Notes (always present — fast-path transparency)
+- **Matter context:** [provided / extracted from raw input — match against firm.matter_number_format: HIGH | MEDIUM | LOW]
+- **Date / duration:** [provided / extracted from raw input metadata or first lines / [[VERIFY: duration]]]
+- **Attendees:** [provided / inferred from speaker labels — per-attendee confidence: HIGH | MEDIUM | LOW; LOW-confidence entries listed below]
+- **Privilege posture:** [provided / defaulted to meeting-type table value: AC | WP | Mediation | Not privileged | Internal]
+- **Billable flag:** [provided / defaulted ON for timekeepers in firm.timekeeper_rate_table / OFF per firm.client_billing_guidelines.{client_id}]
+- **Distribution list:** [provided / read from firm.distribution_lists.{matter_id} / defaulted to privilege-posture default]
+- **Defaulted inputs:** [list every fast-path default that was applied this run]
+- **Override invitation:** "If any default is wrong for this meeting, re-run with explicit input"
 - **Placeholders:** [[VERIFY]] items the attorney must confirm
 - **Privilege concerns:** [any bleed-through or distribution risks]
 - **Follow-up cadence:** [when this matter should next be checked]
@@ -160,6 +172,7 @@ The standard shell (Attendees / Summary by Topic / Decisions / Open Questions / 
 - Always mark the privilege posture; never produce a "mixed" summary without flagging which segments are which
 - Always include the archetype-specific trailing block — never reduce a meet-and-confer to a generic summary; the Rule 26(f) items / disputes preserved are non-negotiable for that archetype
 - Billable entries must be LEDES/UTBMS-compliant when requested; no block billing
+- Reviewer Notes block always present — every fast-path default, inferred value, and low-confidence attendee surfaced for attorney review before distribution
 - Saved to `outputs/meetings/[matter-id]-[YYYY-MM-DD]-[meeting-type].md` if the user confirms
 
 ## Firm Config Keys Used

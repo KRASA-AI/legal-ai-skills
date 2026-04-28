@@ -4,8 +4,8 @@ category: operations
 tools: [claude, chatgpt]
 difficulty: intermediate
 time_saved: "~45 min/depo"
-version: 1.2
-last_eval_score: 8.10
+version: 1.3
+last_eval_score: 9.10
 ---
 
 # Deposition Prep Outline
@@ -200,6 +200,26 @@ The defending variant must contain **no coaching on the substance of answers** �
 **Companion skill:**
 
 After the deposition is taken and the transcript is back, run `skills/operations/deposition-transcript-analyzer.md` to produce the page/line-cited summary, contradiction index, key-admissions ledger, and impeachment map for trial and motion practice. The two skills share the same Foundation / Confront / Commit impeachment grammar so the prep-side outline and the post-deposition analysis stay aligned.
+
+## Firm Config Keys Used
+
+The outline builder pulls these keys from `config.yml` at runtime:
+
+- `firm.name` — appears on the cover sheet of the outline and any work-product designation
+- `firm.matter_number_format` — drives the matter-tag rendered in the outline header and the saved-output filename pattern
+- `firm.licensure_jurisdictions` — flags an Unfamiliar-Jurisdiction reviewer note when the deposition is governed by a state code outside this list (state-code time limits, scope rules, and form-of-objection rules are not assumed to track FRCP defaults)
+- `firm.exhibit_numbering_convention` — sets the default exhibit-numbering scheme (e.g., `Plaintiff's Exhibit 1`, `Defendant's Exhibit A`, `Joint Exhibit 001`); per-matter override via `firm.exhibit_numbering_overrides.{matter_id}` for matters where the parties have stipulated a single sequential exhibit numbering
+- `firm.deposition_defaults.{deposition_type}` — per-type playbook references (fact-witness arc, party arc, 30(b)(6) topic-by-topic arc, expert Daubert arc, hostile-pin-down arc, defending-prep arc)
+- `firm.deposition_defaults.time_budget_template.{deposition_type}` — per-type minute allocation pattern (background, theme blocks, impeachment, reserve) used to seed the Time Budget table; the skill always preserves the FRCP 7-hour default ceiling and the 30-minute reserve floor
+- `firm.deposition_defaults.housekeeping_stipulations` — firm-standard list of opening housekeeping and on-the-record stipulations (reading-and-signing, FRCP 30(b)(5)(C) objection-reservation, prior-deposition history, document-review privilege-waiver inquiry, protective-order designation language)
+- `firm.court_reporter_vendors` — preferred court-reporter vendor and contact, surfaced in the logistics block; same convention for `firm.videographer_vendors` and `firm.interpreter_vendors`
+- `firm.work_product_designation` — the firm's standard work-product header and footer applied to every outline
+- `firm.disclaimers.deposition_outline` — the firm's standard "do not produce, do not share outside the firm" language
+- `firm.ethics.no_witness_substance_coaching` — non-overridable boolean asserting that the defending-prep variant must never coach the substance of answers; the skill treats this as a hard rule even if absent from `config.yml` (the skill cannot be configured to violate Rule 3.4(b) and the analogous state-bar rules)
+- `firm.depo_outline_save_path` — overrides the default save path `outputs/depositions/[matter-id]-[deponent-last-name]-[YYYY-MM-DD].md`
+- `client.deposition_overrides.{client_id}` — per-client overrides (e.g., a client whose engagement letter requires a senior-partner sign-off on every deposition outline before service of any subpoena, or a client that has stipulated to a tighter time budget than the FRCP default in this matter)
+
+If a key is absent from `config.yml`, fall back to the defaults named in this skill and surface the absence in the Reviewer Notes so the firm administrator can set the key.
 
 ## Example Output
 

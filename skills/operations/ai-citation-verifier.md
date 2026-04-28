@@ -4,7 +4,7 @@ category: operations
 tools: [claude, chatgpt]
 difficulty: intermediate
 time_saved: "~45 min/brief"
-version: 1.0
+version: 1.1
 last_eval_score: null
 ---
 
@@ -85,6 +85,8 @@ Do not attempt to perform the verification yourself. You are producing the queue
 ### Step 4 — Cross-validation prompt (hallucination detection)
 
 For every RED item, also generate a cross-validation prompt the attorney (or another AI instance) can run: ask the same question using different phrasings and compare answers. If the AI returns different citations for different phrasings of the same research question, that inconsistency is itself evidence the original output was generated rather than retrieved, and every citation from that session should be re-verified from scratch.
+
+The cross-validation prompt is a *hallucination detector*, not a verifier. A consistent answer from a second AI instance is not a confirmation that the cited authority exists or stands for the proposition the draft attaches to it; it is evidence that re-verification against the primary database is the next step. The hard rule in the Output Requirements block — *no AI-as-verifier* — applies to this step as well: a second AI tool may be used to *raise suspicion* about a citation, never to *clear* one.
 
 ### Step 5 — Produce the Rule 11 / RPC 3.3 certification checklist
 
@@ -173,6 +175,7 @@ Signed: ____________________    Date: ____________
 - When the draft says a case stands for a specific holding or multi-factor rule, the item is YELLOW or RED — never GREEN.
 - When the draft contains a string cite, label every item in the string cite individually.
 - If the draft was produced by an ungrounded AI tool (no retrieval over a legal database), raise the default label of every case citation by one level (GREEN→YELLOW, YELLOW→RED) before applying the step-2 criteria, and state that adjustment in the summary.
+- Hard rule — *no AI-as-verifier*. The verification step recorded against any YELLOW or RED item must be performed against a primary legal database (Westlaw, Lexis, Bloomberg Law, Fastcase, the official reporter, the issuing court's docket via PACER or CourtListener, or the official publisher of the cited statute or regulation). A second generative AI tool — including a different model, a different vendor's chatbot, or the same model in a fresh session — is *not* a permissible verifier, because it shares the generative pathology of the drafting tool. If the signer's only verification is a confirmation from another AI chatbot, the certification checklist must record the item as *unverified* and the verification queue must be re-run against a primary database before the document is filed. The Eastern District of Pennsylvania's April 27, 2026 second-strike opinion is the anchor authority for this rule and is summarized in `knowledge-base/best-practices/ai-hallucination-sanctions-2026.md`.
 - Save the sweep output to `outputs/citation-verification/[matter-id]-[YYYY-MM-DD].md` if the user confirms.
 - Cross-reference `knowledge-base/best-practices/ai-governance-legal.md` (general governance) and `knowledge-base/best-practices/ai-hallucination-sanctions-2026.md` (sanctions landscape) in the certification checklist.
 
