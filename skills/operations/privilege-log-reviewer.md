@@ -4,8 +4,8 @@ category: operations
 tools: [claude, chatgpt]
 difficulty: advanced
 time_saved: "~45 min per 100 documents"
-version: 1.0
-last_eval_score: null
+version: 1.1
+last_eval_score: 9.30
 ---
 
 # Privilege Log Reviewer
@@ -154,6 +154,38 @@ Privilege overclaims are the most common sanctionable failure in privilege logs.
 - When the document is an AI-generated draft (prompt transcript, LLM output), classify per the framework in `ai-privilege-and-work-product.md` and flag the call as ESCALATE if the jurisdiction has not addressed the issue
 - If batch-processing, produce a summary table at the end with counts per classification and a list of ESCALATE control numbers for the reviewing attorney's queue
 - Save the batch output to `outputs/privilege-review/[matter-id]-[YYYY-MM-DD].md` if the user confirms
+
+## Firm Config Keys Used
+
+The privilege-log reviewer pulls these keys from `config.yml` at runtime:
+
+- `firm.name` — appears on the privilege-review header and the work-product designation footer carried forward to every entry
+- `firm.matter_number_format` — drives the matter-tag rendered in the review header and the saved-output filename pattern
+- `firm.licensure_jurisdictions` — flags an Unfamiliar-Jurisdiction reviewer note when the governing privilege rules are a state code outside this list (state privilege scope, *Kovel*-agent recognition, work-product opinion-vs-fact distinctions, Rule 502(d) availability, and at-issue waiver tests differ between FRCP/FRE and state codes — the skill must not silently default to federal framing)
+- `firm.privilege_defaults.governing_rules.{matter_type}` — per-matter-type default for which privilege rules govern (federal common law / state code / hybrid in diversity / arbitration confidentiality / administrative-agency rules); overridden per matter when a standing order or choice-of-law ruling resolves the question
+- `firm.privilege_defaults.log_format.{matter_type}` — Rule 26(b)(5) log-format default (categorical, document-by-document, metadata-only, hybrid) by matter type; cross-references the `discovery-response-drafter` skill which handles the production-side handoff
+- `firm.privilege_defaults.kovel_agent_register` — the firm-maintained list of *Kovel*-covered third parties (accountants, consultants, jury consultants, valuation experts, economists, technology forensics) keyed by matter so the privilege framework's "attorney party" analysis recognizes covered agents without requiring re-input each run; per-matter override via `firm.privilege_defaults.kovel_agent_register.{matter_id}`
+- `firm.privilege_defaults.common_interest_agreements.{matter_id}` — per-matter common-interest / joint-defense agreement scope (parties, subject-matter limitations, effective dates) that drives the "in confidence" analysis when a third party on a communication is a co-defendant or co-counsel rather than a waiver
+- `firm.privilege_defaults.rule_502d_orders.{matter_id}` — boolean per matter indicating whether a Rule 502(d) order is in place; when false, the skill flags the absence as a reviewer note in every entry's "502(d) order in place" field rather than assuming the order is present, and downgrades the default classification confidence by one level for any close call
+- `firm.privilege_defaults.anti_overclaim_thresholds` — firm-standard thresholds that prevent the most common sanctionable failures (custodian-count ceiling that pushes a borderline call to ESCALATE rather than PRIVILEGED, time-range ceiling, attorney-cc-only-without-substantive-participation pattern); when a threshold is hit and the call would otherwise be PRIVILEGED, the skill downgrades to ESCALATE and surfaces the threshold-hit reason in the Driver Evidence block
+- `firm.privilege_defaults.in_house_counsel_register` — the firm or client's roster of in-house attorneys with role designations (general counsel, deputy GC, assistant GC, business-unit counsel) so the primary-purpose analysis can be calibrated (in-house counsel communications require a primary-purpose-not-merely-a-purpose analysis under most circuits' law)
+- `firm.privilege_defaults.ai_privilege_posture.{matter_id}` — per-matter AI-privilege posture (PRESUMPTIVELY DISCOVERABLE / PRESUMPTIVELY PRIVILEGED / CASE-BY-CASE) drawing from the *Heppner* line and the post-2026 protective-order updates documented in `knowledge-base/best-practices/ai-privilege-and-work-product.md`
+- `firm.signature_blocks.{role}` — signature block for the reviewing attorney pulled by role (associate / partner / GC); the skill applies the partner block when an associate signs to require co-signature where the firm policy requires it for privilege-log certification
+- `firm.disclaimers.privilege_review` — firm-standard "AI-assisted classification, not a substitute for licensed-attorney privilege determination" language carried in the Disclaimers block
+- `firm.privilege_review_save_path` — overrides the default save path `outputs/privilege-review/[matter-id]-[YYYY-MM-DD].md`
+- `firm.ethics.no_privileged_quote_in_log` — non-overridable boolean asserting that the skill must never reproduce privileged content verbatim in the log description (the rule already in Output Requirements); the skill treats this as a hard rule even if absent from `config.yml`. This is the fifth non-overridable rule in the repo (after time-entry-cleaner's total-input-equals-total-output guardrail, deposition-prep-outline's no-witness-substance-coaching rule, discovery-response-drafter's FRCP-26(g) overobjection guardrail, and ai-citation-verifier's no-AI-as-verifier rule). The codification matters because privilege-log-quotation waiver is one of the most common avoidable subject-matter-waiver failure modes in Rule 26(b)(5) practice
+- `firm.ethics.no_high_confidence_with_medium_factor` — non-overridable boolean codifying the Output Requirements rule that no PRIVILEGED call can be at High confidence when any framework factor is Medium or lower; the skill auto-downgrades to ESCALATE
+- `client.privilege_review_overrides.{client_id}` — per-client overrides; common entries are a client whose privileged-document protocol requires senior-partner sign-off on every PRIVILEGED call before withholding, a client whose engagement letter specifies a stricter anti-overclaim threshold than the firm default, a client whose subject-matter-waiver scope has been narrowed by a prior order in the matter, or a client whose in-house counsel must be included in the *Kovel*-agent register for matters in a particular practice area
+
+If a key is absent from `config.yml`, fall back to the defaults named in this skill and surface the absence in the Driver Evidence block so the firm administrator can set the key. The skill never relaxes a non-overridable rule based on a missing config value.
+
+## Cross-References
+
+- `skills/operations/discovery-response-drafter.md` — the production-side counterpart; the discovery-response-drafter handles the response-and-objections pass and routes withheld documents to this skill for the privilege log itself
+- `skills/admin/document-intake-extractor.md` — upstream when client-supplied documents must be triaged for metadata before they enter the privilege-review queue
+- `skills/operations/pre-filing-independent-review.md` — the institutional checkpoint for any privilege log accompanying a Tier 3 filing (motion for protective order, motion to compel response, motion to quash); the independent reviewer audits the chain-of-custody for AI-classifier output before the log is served
+- `knowledge-base/best-practices/ai-privilege-and-work-product.md` — applied before any AI-assisted privilege call, especially for AI-generated drafts (prompt history and output from a consumer AI tool are presumptively discoverable in some districts post-*Heppner*)
+- `knowledge-base/best-practices/ai-governance-legal.md` — Tier 3 AI use applies to privilege review (the underlying document set is by definition confidential and frequently privilege-adjacent)
 
 ## Example Output
 

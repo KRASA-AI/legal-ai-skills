@@ -4,8 +4,8 @@ category: operations
 tools: [claude, chatgpt]
 difficulty: intermediate
 time_saved: "~45 min/brief"
-version: 1.1
-last_eval_score: null
+version: 1.2
+last_eval_score: 9.30
 ---
 
 # AI Citation & Quote Verifier
@@ -182,6 +182,26 @@ Signed: ____________________    Date: ____________
 ## Companion Skill — Pre-Filing Independent Review
 
 This skill is the *drafter-side* sweep. It is not the last line of defense for high-stakes filings. For any Tier 3 filing — appellate briefs, emergency motions, sanctions responses, motions for summary judgment, Daubert motions, any filing signed by a partner in a matter with sophisticated opposing counsel, and any filing in which a generative AI tool touched the draft at any stage — the drafter-side sweep must be followed by an institutional pass run by an attorney who did not draft, edit, or direct the drafting of the filing. That pass is `skills/operations/pre-filing-independent-review.md`. The S.D.N.Y. Bankruptcy Court *Prince Group* apology letter of April 2026 documents the failure mode this companion skill was designed to address: a firm's own drafter-side citation-checking processes ran, did not catch the problems, and the filing shipped with approximately 40 errors that opposing counsel later surfaced. The firm's written AI policy existed; the policy was not followed on the specific filing; and there was no institutional checkpoint between the drafter-side sweep and the clerk's filing window.
+
+## Firm Config Keys Used
+
+The citation verifier pulls these keys from `config.yml` at runtime:
+
+- `firm.name` — appears on the verification-sweep cover sheet and the certification checklist
+- `firm.matter_number_format` — drives the matter-tag rendered in the sweep header and the saved-output filename pattern
+- `firm.licensure_jurisdictions` — flags an Unfamiliar-Jurisdiction reviewer note when the filing's tribunal is in a state outside this list (state-court duty-of-candor rules, jurisdictional AI-disclosure orders, and standing-order language differ — the verifier will not silently default to ABA Model Rule 3.3 framing when the governing rule is a state RPC variant)
+- `firm.ai_governance.tier_definitions` — the firm's AI-use tier mapping (Tier 1 / Tier 2 / Tier 3); drives the default-label-raise rule on case citations and determines which filings *require* (rather than merely recommend) a pre-filing-independent-review handoff
+- `firm.ai_governance.permitted_tools` — the firm-approved AI tool register with grounded/ungrounded designation per tool; surfaces "AI tools used in drafting" in the sweep header without requiring the user to re-state the grounded/ungrounded posture each run
+- `firm.ai_governance.tier_3_handoff_required` — boolean; when true (the default), Tier 3 filings cannot complete the certification checklist without a recorded `pre-filing-independent-review` handoff; the sweep's certification block flags the absence as an unresolved item rather than allowing the signing attorney to certify without it
+- `firm.citation_databases.{practice_area}` — preferred primary databases by practice area (e.g., Westlaw for general litigation, PACER + CourtListener for federal procedural posture, Bloomberg Law for securities, Lexis for tax) — drives the per-item Verification Queue's "Database to open" field so the queue is actionable on first read
+- `firm.signing_attorney_register` — the firm's roster of attorneys eligible to sign filings, with bar admissions and AI-tool-use status per attorney; the sweep validates that the named signing attorney is on the register and admitted in the filing's tribunal, surfacing any mismatch as a RED-equivalent blocker before the certification checklist can be completed
+- `firm.disclaimers.citation_verification` — firm-standard "AI-assisted sweep, not a substitute for primary-source verification" language carried in the Output Requirements block
+- `firm.citation_verification_save_path` — overrides the default save path `outputs/citation-verification/[matter-id]-[YYYY-MM-DD].md`
+- `firm.ethics.no_ai_as_verifier` — non-overridable boolean asserting the hard rule already documented in Output Requirements (a second AI tool may *raise suspicion* about a citation but never *clear* one); the skill treats this as a hard rule even if absent from `config.yml`. This is the fourth non-overridable rule in the repo (after time-entry-cleaner's total-input-equals-total-output, deposition-prep-outline's no-witness-substance-coaching, and discovery-response-drafter's FRCP-26(g) overobjection guardrail), and the codification matches the Eastern District of Pennsylvania April 27, 2026 second-strike opinion's framing
+- `firm.ethics.no_quote_clears_green` — non-overridable boolean codifying the Output Requirements rule that no direct quotation can be marked GREEN; the skill treats this as a hard rule even if absent from `config.yml` (the verbatim-check task is required regardless of how canonical the cited authority appears)
+- `client.citation_verification_overrides.{client_id}` — per-client overrides; common entries are a client whose engagement letter requires every filing to run the sweep regardless of AI involvement (i.e., escalates the default beyond the AI-touched threshold), a client whose in-house AI-governance addendum requires a higher minimum verification time per item, or a client whose internal escalation policy requires sweep output to be routed to in-house counsel before the signing attorney's certification
+
+If a key is absent from `config.yml`, fall back to the defaults named in this skill and surface the absence in the certification checklist so the firm administrator can set the key. The skill never relaxes a hard rule based on a missing config value.
 
 ## Example Output
 
