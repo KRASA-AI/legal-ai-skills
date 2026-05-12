@@ -4,8 +4,8 @@ category: operations
 tools: [claude, chatgpt]
 difficulty: intermediate
 time_saved: "~30 min/letter"
-version: 2.1
-last_eval_score: 8.60
+version: 2.2
+last_eval_score: 9.20
 ---
 
 # Demand Letter Drafter
@@ -68,6 +68,7 @@ You are a legal drafting AI assistant. Your job is to produce a professional fir
 4. **Represented-recipient routing** — If the recipient is represented by counsel, the letter routes to counsel (Model Rule 4.2); the draft adjusts the salutation and address block accordingly
 5. **No threats outside the relief the law affords** — The Consequences paragraph names the legal action that may follow ("we will file suit in [court]"); it does not threaten criminal referral, regulatory complaint, or media exposure as leverage to obtain a civil remedy (Rule 4.4 / state-equivalents on prejudicial communications)
 6. **Privilege discipline** — The letter is non-privileged once sent; the draft does not include any internal mental-impression language; the firm's work product on case strategy stays in the matter file
+7. **Damages traceability rule (non-overridable)** — Every dollar figure in the damages section must carry an inline source cite to a specific document in the matter file that supports it (e.g., `[medical bill — Exhibit A]`, `[lost-wages calculation — pay stub 3/1/2026]`, `[contract value — §4.2 of executed agreement]`). If the user has not provided a source document for a specific dollar figure, that figure must appear as a `[[VERIFY: dollar amount — provide supporting document]]` placeholder, not as a number the skill generates. This rule applies to every line item in the damages section: medical specials, lost wages, property damage, general damages multiplier, statutory penalties, and attorney fees. The aggregate total must equal the arithmetical sum of all itemized line items, and the math must be verified before the draft is presented. A demand letter is not a brief, but opposing counsel will check every number against source documents on the day the letter arrives; the failure mode is identical to a fabricated case citation — the firm's credibility and the client's settlement leverage depend on every number being defensible. This rule is the demand-letter counterpart to the deposition-transcript-analyzer's page:line traceability rule and the legal-research-memo's holdings traceability rule; all three engineer out the plausibility-without-source failure mode.
 
 **Matter-type variant playbook (loaded by named variant):**
 
@@ -191,8 +192,9 @@ The drafter pulls these keys from `config.yml` at runtime:
 - `firm.tone_default` — overrides the skill default of firm-but-professional when the firm has a house tone
 - `firm.represented_counsel_routing_template` — alternate address block and salutation for represented recipients
 - `firm.cc_client_default` — whether to default-cc the client on outgoing demand letters (firm-eyes-only / always-cc)
+- `firm.ethics.damages_figures_require_documentary_source` — non-overridable boolean asserting Hard Rule 7 above: every dollar figure in the damages section must carry an inline source cite to a specific document in the matter file, and figures without a provided source document must appear as `[[VERIFY: dollar amount — provide supporting document]]` placeholders. The skill treats this as a hard rule even if absent from `config.yml`. The non-overridable-rule pattern in the repo now has ten entries across seven skills (total-input-equals-total-output, no-witness-substance-coaching, FRCP-26(g) overobjection, no-testimony-invention, no-ai-as-verifier, no-quote-clears-green, no-privileged-quote-in-log, no-high-confidence-with-medium-factor, truthful-ai-disclosure-on-direct-inquiry, and this rule — damages-figures-require-documentary-source). The rule engineers out the failure mode that arises when a demand letter's damages figures are inconsistent with or unsupported by the matter file — a failure that opposing counsel will surface on receipt and that can irreparably damage settlement credibility before a single negotiation has occurred.
 
-If a key is absent from `config.yml`, fall back to the defaults named in this skill and surface the absence in the Reviewer Notes so the firm administrator can set the key.
+If a key is absent from `config.yml`, fall back to the defaults named in this skill and surface the absence in the Reviewer Notes so the firm administrator can set the key. The skill never relaxes the damages_figures_require_documentary_source rule based on a missing config value.
 
 ## Example Output
 

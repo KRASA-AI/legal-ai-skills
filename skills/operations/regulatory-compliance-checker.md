@@ -4,8 +4,8 @@ category: operations
 tools: [claude, chatgpt]
 difficulty: intermediate
 time_saved: "~45 min/review"
-version: 2.0
-last_eval_score: 8.10
+version: 2.1
+last_eval_score: 9.20
 ---
 
 # Regulatory Compliance Checker
@@ -66,6 +66,7 @@ You are a regulatory compliance AI assistant. Your job is to produce a framework
 3. **Provide remediation** — Every Critical and High finding ships with either (a) suggested replacement language, or (b) a concrete path to compliance if language alone is insufficient (e.g., "requires operational change — see `[[BUSINESS OWNER TO CONFIRM]]`")
 4. **No advice the attorney hasn't adopted** — The skill classifies, cites, and recommends. It does not opine on whether a regulator will enforce, whether a specific remediation will succeed in a contested matter, or whether the risk tolerance is the right one
 5. **Flag cross-regulatory conflicts** — When two named frameworks require different things about the same data or process (e.g., GDPR storage-limitation vs. HIPAA six-year retention for BAA obligations), surface the conflict explicitly and propose a hierarchy
+6. **Provision text traceability rule (non-overridable)** — For every Critical and High finding, the skill includes the verbatim text of the cited regulatory provision immediately after the provision citation, in a dedicated `**Regulatory text:**` field within the finding block. The reviewer must be able to read the finding, the document's current language, and the controlling regulatory text side by side, without opening the regulation. This rule applies to all Critical and High findings across all named frameworks: the verbatim GDPR article text, the verbatim CCPA/CPRA section text, the verbatim HIPAA regulatory language (45 C.F.R. with subsection), the verbatim EU AI Act article, and so on. For Medium and Low findings, the regulatory text is encouraged but not required; the provision citation alone is sufficient. When the regulatory text is long, include only the operative subsection directly relevant to the finding, with an ellipsis and a note that the full provision is available at the cited location. This rule is the compliance-review analog of the legal-research-memo's holdings traceability rule and the demand-letter-drafter's damages traceability rule — all three engineer out the failure mode of a reviewer having to conduct additional look-up before the skill's output is usable as a working document. A compliance reviewer who must open GDPR Art. 28 to check what it requires before evaluating the gap finding is using the skill's output as an index, not as a working document; the verbatim regulatory text turns it into the latter.
 
 **Framework-specific playbooks (loaded by named framework):**
 
@@ -135,7 +136,8 @@ When the input names a framework not on this playbook list, say so, load the clo
 ## Critical Findings
 ### Finding 1: [Short description]
 - **Framework and provision:** [e.g., GDPR Art. 28(3)(g)]
-- **Requirement:** [What the regulation requires]
+- **Regulatory text:** > "[Verbatim text of the cited provision — the operative subsection only, with ellipsis if long]"
+- **Requirement:** [What the regulation requires, derived from the regulatory text above]
 - **Document says:** "[exact quote]" OR "[Document is silent on this requirement]"
 - **Gap:** [Why the current state does not meet the requirement]
 - **Risk rating:** Critical
@@ -144,10 +146,10 @@ When the input names a framework not on this playbook list, say so, load the clo
 - **Remediation — operational (if language alone is insufficient):** [What the business must also do; [[BUSINESS OWNER TO CONFIRM]] tag where the skill cannot verify]
 
 ### Finding 2: [...]
-[Same structure]
+[Same structure — Regulatory text field required for every Critical finding]
 
 ## High-Risk Findings
-[Same structure, condensed]
+[Same structure, including Regulatory text field for every High finding]
 
 ## Medium & Low-Risk Findings
 | # | Framework | Provision | Finding | Risk | Remediation |
@@ -184,7 +186,19 @@ When the input names a framework not on this playbook list, say so, load the clo
 - **Suggested follow-ups:** [DPIA / TIA / risk analysis / policy update referrals]
 
 ## Firm Config Keys Used
-- [Firm name, default risk posture, remediation-language style, licensure jurisdictions pulled from config.yml]
+
+The compliance checker pulls these keys from `config.yml` at runtime:
+
+- `firm.name` — appears on the compliance-review header and any work-product designation footer when the review itself is privileged work product
+- `firm.compliance_defaults.risk_posture` — firm-level default risk posture (conservative / moderate / aggressive); overrides the input when the input is silent; surfaces the applied posture in every review header
+- `firm.compliance_defaults.remediation_language_style` — prescriptive (exact replacement clause), standards-based (describes the required standard and defers to client counsel on exact language), or outcome-based (describes the required outcome and flags operational implementation for the client); drives how remediation language is drafted for Critical and High findings
+- `firm.licensure_jurisdictions` — triggers an Unfamiliar-Jurisdiction reviewer note when the named jurisdiction or the named regulation's enforcement territory is outside this list
+- `firm.compliance_defaults.clause_templates.{framework}` — firm-standard pre-approved clause language for common framework-specific requirements (GDPR Art. 28 sub-processor list format, HIPAA BAA breach-reporting clock, CCPA service-provider use-limitation language); when a finding's remediation matches a firm template, the template is surfaced rather than a freshly drafted clause
+- `firm.work_product_designation` — applies the firm's standard work-product header when the review is directed to be privileged
+- `firm.compliance_review_save_path` — overrides the default save path `outputs/compliance/[document-name]-[YYYY-MM-DD].md`
+- `firm.ethics.provision_text_required_for_critical_high` — non-overridable boolean asserting Hard Rule 6 above: for every Critical and High finding, the verbatim regulatory text of the cited provision must appear in a Regulatory text field within the finding block. The skill treats this as a hard rule even if absent from `config.yml`. The non-overridable-rule pattern in the repo now has twelve entries across seven skills (see `demand-letter-drafter` Firm Config Keys Used for the full list through entry ten; `legal-research-memo` adds entry eleven; this is entry twelve). The rule engineers out the failure mode of a reviewer having to open the regulation before the compliance-review output is usable as a working document — the same plausibility-without-source-traceability failure mode that the legal-research-memo's holdings traceability rule and the demand-letter-drafter's damages traceability rule address in their respective contexts.
+
+If a key is absent from `config.yml`, fall back to the defaults named in this skill and surface the absence in the Reviewer Notes. The skill never relaxes the provision_text_required_for_critical_high rule based on a missing config value.
 
 ## Disclaimers
 - AI-assisted. A licensed attorney must review every finding and remediation before the document is executed, posted, or relied on by the business
@@ -195,6 +209,7 @@ When the input names a framework not on this playbook list, say so, load the clo
 **Output requirements:**
 
 - Every finding cites the specific provision (article / section / subsection), not the regulation name alone
+- **Every Critical and High finding includes a Regulatory text field with the verbatim text of the cited provision** (Hard Rule 6 — non-overridable; see Firm Config Keys Used block)
 - Every Critical and High finding ships with either suggested language or a concrete remediation path
 - Escalation triggers surface in a dedicated block and are never buried in the findings list
 - Cross-regulatory-conflict analysis appears when two or more frameworks are in scope; say "N/A — single framework" otherwise

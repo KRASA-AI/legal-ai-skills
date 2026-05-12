@@ -4,8 +4,8 @@ category: operations
 tools: [claude, chatgpt]
 difficulty: intermediate
 time_saved: "~60 min/memo"
-version: 2.1
-last_eval_score: 8.50
+version: 2.2
+last_eval_score: 9.20
 ---
 
 # Legal Research Memo
@@ -175,7 +175,15 @@ When the firm's licensure does not cover the named jurisdiction, flag this in th
 - Analysis is based on the facts as provided; additional facts may change the conclusion
 
 ### Firm Config Keys Used
-- [Firm name, citation style, default memo format, licensure jurisdictions, research-log format pulled from config.yml]
+- `firm.name` — appears on the memo cover and in the work-product designation footer
+- `firm.citation_style` — Bluebook, ALWD, or jurisdiction-specific (California Style Manual, Texas Greenbook, etc.); overrides the input value when the firm has a house standard
+- `firm.memo_format_default` — partner / client / court-adjacent; used when the audience is not specified in the input
+- `firm.licensure_jurisdictions` — triggers the Unfamiliar-Jurisdiction Flag when the named jurisdiction is outside this list
+- `firm.research_log_format` — format template for the Research Log block (source / query / result / date); pulled from config so every memo's log is consistent for AI-work-product documentation purposes
+- `firm.ethics.holdings_require_verbatim_support` — non-overridable boolean asserting the Holdings Traceability Rule in Output Requirements; the skill treats this as a hard rule even if absent from `config.yml`. The non-overridable-rule pattern in the repo now has eleven entries across seven skills (see `demand-letter-drafter` Firm Config Keys Used for the full list through entry ten; this is entry eleven). The rule engineers out the failure mode of a partner relying on a rule statement in the memo that does not trace to a verbatim quoted passage in the cited authority — the same plausibility-without-traceability pathology that drives the 2026 sanctions record in the citation-fabrication context
+- `client.research_memo_overrides.{client_id}` — per-client overrides; common entries are a client whose engagement letter requires all research memos to use a specific citation style regardless of jurisdiction, or a client whose AI-governance addendum requires the Research Log to include the AI tool used and the specific prompts run
+
+If a key is absent from `config.yml`, fall back to the defaults named in this skill and surface the absence in the Disclaimers section. The skill never relaxes the holdings_require_verbatim_support rule based on a missing config value.
 ```
 
 **Output format — Client memo (override block):**
@@ -213,6 +221,7 @@ When the audience is Court-adjacent, structure CREAC sections so they drop direc
 - Audience-specific template applied (partner / client / court-adjacent)
 - Work Product designation applied for partner memos; dropped for client memos
 - Never fabricate case citations or statutory sections — describe the legal principle and flag for the attorney to locate supporting authority when uncertain
+- **Holdings traceability rule (non-overridable):** Every cited rule statement and every cited holding in the Rule and Explanation sections of CREAC must be accompanied by both (a) a pin cite to the specific page of the opinion (or specific subsection of the statute) AND (b) a verbatim quoted passage from that authority supporting the proposition, placed immediately after the pin cite in a block quotation or inline quotation. A rule statement that cannot be supported by a verbatim quoted passage from the cited authority must be flagged with `[[VERIFY: no supporting quotation located — describe the principle and let the attorney locate the quoted passage]]` rather than stated as verified. This rule extends to statutory interpretations: every cited interpretation of a statute must identify the specific subsection of the statute and the controlling case or agency guidance that establishes the interpretation, with a verbatim quoted passage from the controlling source. The rule exists because the partner who relies on this memo should be able to read a rule statement, read the quoted passage that supports it, and know exactly where in the primary source to go — without opening Westlaw. This is the legal-research-memo analog of the deposition-transcript-analyzer's page:line traceability rule and the demand-letter-drafter's damages traceability rule; all three engineer out the failure mode of plausibility-without-source-traceability.
 - **Mandatory handoff:** Before this memo is relied on by a partner or client, or cited in any filing, run the draft through `skills/operations/ai-citation-verifier.md`. Every case citation and every direct quotation must be confirmed in a primary legal database. See `knowledge-base/best-practices/ai-hallucination-sanctions-2026.md` for the Q1 2026 enforcement context
 - Saved to `outputs/research/[matter-id]-[issue-slug]-[YYYY-MM-DD].md` if the user confirms
 
