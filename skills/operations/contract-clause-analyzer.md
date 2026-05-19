@@ -4,8 +4,8 @@ category: operations
 tools: [claude, chatgpt]
 difficulty: intermediate
 time_saved: "~30 min/contract"
-version: 2.2
-last_eval_score: 9.00
+version: 2.3
+last_eval_score: 9.20
 ---
 
 # Contract Clause Analyzer
@@ -69,6 +69,18 @@ Compare observed contract language to these three positions and classify each cl
 
 When a playbook is not provided, treat widely observed market terms as the standard position and state every assumption explicitly so an attorney can confirm or override.
 
+**Hard rule — Clause Language Traceability (non-overridable):**
+
+For every Critical and High finding in the Review Report, the analyzer must include the verbatim contract language at issue in a `**Current language:**` field within the finding block, with a section/page reference identifying exactly where in the contract the language appears (e.g., `§ 8.2(b), p. 14`). The reviewing attorney must be able to read the finding, the document's current language, and the recommended revision side by side without opening the underlying contract.
+
+For every missing-provision finding, the analyzer must identify the contract sections that were searched for the missing provision and the absence-detection basis (e.g., `Searched §§ 1 (Definitions), 12 (Termination), 15 (Miscellaneous); no liability cap found`), so the reviewer can confirm the omission is real rather than the result of an organizational quirk in the contract's structure.
+
+For Medium and Low findings, verbatim language is encouraged but not required; if omitted, a section reference is still mandatory.
+
+The analyzer never paraphrases the offending clause where verbatim text is required. If the contract text input is truncated or the relevant section is illegible, the finding is flagged `[[VERIFY: clause language — provide complete contract section]]` rather than presented as analyzed.
+
+This rule is the contract-review analog of the demand-letter-drafter's Damages Traceability Rule, the legal-research-memo's Holdings Traceability Rule, and the regulatory-compliance-checker's Provision Text Traceability Rule. It is governed by the `firm.ethics.clause_language_required_for_critical_high` non-overridable config key and applies even if the key is absent from `config.yml`.
+
 **Process:**
 
 1. Identify the contract type and load the appropriate standard-provisions checklist:
@@ -115,10 +127,11 @@ When a playbook is not provided, treat widely observed market terms as the stand
 ## Critical & High-Risk Findings
 
 ### Finding 1: [Short description]
-- **Section:** [reference]
+- **Section:** [reference — e.g., § 8.2(b), p. 14]
 - **Risk level:** [Critical/High]
-- **Current language:** "[relevant excerpt]"
+- **Current language:** "[verbatim quotation from the contract — required for Critical/High findings, no paraphrase]"
 - **Issue:** [explanation]
+- **Playbook classification:** [Within range / Outside range / Escalation — when playbook provided]
 - **Recommendation:** [specific revision or negotiation point]
 - **Suggested language:** "[alternative clause text]"
 
@@ -126,10 +139,10 @@ When a playbook is not provided, treat widely observed market terms as the stand
 
 ## Medium & Low-Risk Findings
 
-### [Same structure, condensed]
+### [Same structure, condensed; verbatim language encouraged but not required, section reference still mandatory]
 
 ## Missing Provisions
-[List of standard provisions not found in the contract, with explanation of why each matters]
+[List of standard provisions not found in the contract. Each entry includes: the missing provision name, the contract sections searched (e.g., "Searched §§ 1, 12, 15"), and the consequence if the omission stands. Confirms the omission is real rather than the result of a contract-structure quirk.]
 
 ## Favorable Provisions
 [Provisions that are well-drafted or favorable to your party — important for balanced analysis]
@@ -177,8 +190,9 @@ The analyzer pulls these keys from `config.yml` at runtime:
 - `firm.counterparty_sophistication.default` — default sophistication assumption when not supplied; if "sophisticated," tighter tolerances apply because both sides will redline
 - `client.overrides.{client_id}.playbook_overrides` — per-client overrides (e.g., a client that has a higher liability-cap tolerance than the firm default for this client's deals)
 - `client.overrides.{client_id}.escalation_thresholds` — per-client thresholds (e.g., a client that requires GC sign-off on any deal > $1M regardless of risk rating)
+- `firm.ethics.clause_language_required_for_critical_high` — non-overridable boolean codifying the Clause Language Traceability hard rule in the Instructions block: every Critical and High finding must include a verbatim quote of the offending contract language with a section/page reference, and every missing-provision finding must identify the sections searched. The skill treats this as a hard rule even if absent from `config.yml`. This is the eleventh non-overridable rule in the repo and the contract-review analog of the demand-letter-drafter's Damages Traceability Rule, the legal-research-memo's Holdings Traceability Rule, and the regulatory-compliance-checker's Provision Text Traceability Rule.
 
-If a key is absent from `config.yml`, fall back to the defaults named in this skill and surface the absence in the Reviewer Notes so the firm administrator can set the key.
+If a key is absent from `config.yml`, fall back to the defaults named in this skill and surface the absence in the Reviewer Notes so the firm administrator can set the key. The skill never relaxes a hard rule based on a missing config value.
 
 ## Cross-References
 

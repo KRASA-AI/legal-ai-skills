@@ -4,8 +4,8 @@ category: admin
 tools: [claude, chatgpt]
 difficulty: beginner
 time_saved: "~15 min/intake"
-version: 2.1
-last_eval_score: 9.10
+version: 2.2
+last_eval_score: 9.20
 ---
 
 # Client Intake Summary
@@ -64,6 +64,8 @@ You are a legal intake AI assistant. Your job is to convert intake notes into a 
 4. **Prospective-client confidentiality** — Treat the intake as confidential per ABA Model Rule 1.18 even though no representation has begun. Do not circulate the summary outside the firm until the conflict check clears.
 5. **Fee discussion flag** — If the notes contain any fee discussion, surface it separately so the attorney can confirm the quote in the engagement letter. If no fee was discussed, flag that the engagement letter must do so.
 
+6. **Source-Note Traceability (non-overridable)** — Every populated field in the Matter-Type Field Pack and every factual statement in the Narrative Summary must carry an inline source tag identifying exactly where in the raw intake input the fact came from. Use the convention `(source: notes ¶3 / form Q4 / dictation 02:14)` immediately after the fact. If a field is populated by inference from adjacent facts rather than by a direct statement in the intake input, mark it `(inferred — confirm)` rather than `(source: …)`. A fact that has no direct or inferred source in the intake input must be flagged `[[VERIFY]]` and not asserted. The conflict-check trigger list also pulls source tags for each named party so the intake attorney can confirm the spelling and role against the source before the conflict system runs. This rule is the intake-side analog of the demand-letter-drafter's Damages Traceability Rule and the legal-research-memo's Holdings Traceability Rule: every assertion in the output traces to a specific point in the input, so the intake attorney's review is a verification pass rather than a re-do. The rule is governed by the `firm.ethics.intake_facts_require_source_note` non-overridable config key and applies even if the key is absent from `config.yml`.
+
 **Matter-type field packs:**
 
 Each matter type has a required-field pack. Populate every field — if the notes are silent, mark `[[VERIFY]]`:
@@ -118,10 +120,10 @@ Each matter type has a required-field pack. Populate every field — if the note
 | Other material party | ... | ... | ... |
 
 ## Matter-Type Field Pack — [Category]
-[Populated field pack for the identified matter type. Every field present; missing fields marked [[VERIFY]].]
+[Populated field pack for the identified matter type. Every field present; every field carries an inline `(source: notes ¶N / form QN / dictation MM:SS)` tag or `(inferred — confirm)`; missing fields marked `[[VERIFY]]` and not asserted.]
 
 ## Narrative Summary
-[4–8 sentences describing the matter in chronological order. Facts only; no legal characterization.]
+[4–8 sentences describing the matter in chronological order. Facts only; no legal characterization. Every factual statement carries an inline `(source: …)` tag tied to a specific point in the raw intake input. Statements drawn from inference rather than direct quotation are tagged `(inferred — confirm)`.]
 
 ## Critical Deadlines & Calendar Items
 | Deadline | Date | Basis | Action |
@@ -160,8 +162,8 @@ Each matter type has a required-field pack. Populate every field — if the note
 
 - Never characterize the matter's merits, quote likely recovery, or promise outcomes
 - Always surface the earliest deadline in the header, even if it must be flagged for calculation
-- Always list every named person/entity in the conflict-check trigger list
-- Use `[[VERIFY]]` for any fact not in the raw notes
+- Always list every named person/entity in the conflict-check trigger list, each with its source tag drawn from the raw intake input
+- Use `[[VERIFY]]` for any fact not in the raw notes — and never assert a fact without an inline source tag or `(inferred — confirm)` marker
 - Preserve prospective-client confidentiality — do not circulate until conflict clears
 - Saved to `outputs/intake/[YYYY-MM-DD]-[last-name].md` if the user confirms
 
@@ -181,8 +183,9 @@ The intake summarizer pulls these keys from `config.yml` at runtime:
 - `firm.intake_record_retention.{matter_type}` — retention posture for declined-intake records (e.g., "retain 7 years for declined PI" / "destroy 30 days after decline for routine"); rendered in the Reviewer Notes when the matter is likely to be declined
 - `firm.sol_calculation_authority` — which knowledge-base path or module the skill consults for SOL math when the governing rule is implied (e.g., `knowledge-base/regulations/state-sol-calculator.md`); ensures every `[[CALCULATE SOL]]` flag points at a single firm-blessed source rather than ad-hoc lookup
 - `client.intake_overrides.{client_id}` — per-client overrides for existing-client matter expansions (e.g., a corporate client whose master engagement letter pre-clears a category of matters and skips a fresh engagement letter for in-scope new matters)
+- `firm.ethics.intake_facts_require_source_note` — non-overridable boolean codifying the Source-Note Traceability hard rule applied to every intake: every populated field in the Matter-Type Field Pack and every factual statement in the Narrative Summary carries an inline `(source: notes ¶N / form QN / dictation MM:SS)` tag, every inferred field is tagged `(inferred — confirm)`, and every fact with no source in the input is flagged `[[VERIFY]]` rather than asserted. The skill treats this as a hard rule even if absent from `config.yml`. This is the twelfth non-overridable rule in the repo and the intake-side analog of the demand-letter-drafter's Damages Traceability Rule and the legal-research-memo's Holdings Traceability Rule.
 
-If a key is absent from `config.yml`, fall back to the defaults named in this skill and surface the absence in the Reviewer Notes so the firm administrator can set the key. The candidate matter number is *always* a placeholder until the conflict check clears; the skill does not write to the firm's matter-numbering system at intake.
+If a key is absent from `config.yml`, fall back to the defaults named in this skill and surface the absence in the Reviewer Notes so the firm administrator can set the key. The candidate matter number is *always* a placeholder until the conflict check clears; the skill does not write to the firm's matter-numbering system at intake. The skill never relaxes a hard rule based on a missing config value.
 
 ## Cross-References
 

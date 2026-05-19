@@ -4,8 +4,8 @@ category: operations
 tools: [claude, chatgpt]
 difficulty: intermediate
 time_saved: "~60 min per discovery set"
-version: 1.1
-last_eval_score: 9.10
+version: 1.2
+last_eval_score: 9.20
 ---
 
 # Discovery Response Drafter
@@ -76,6 +76,19 @@ For each request, evaluate whether any of the following applies. Do not assert a
 - Do **not** assert privilege broadly or generally — each privilege assertion must be logged per the privilege-log-reviewer skill
 - Preserve any standing objections in a "General Objections" section that is incorporated by reference into each response but is not, standing alone, sufficient to withhold any information
 
+**Hard rule — Objection-Basis Traceability (non-overridable):**
+
+Every objection asserted in a specific response, and every standing objection in the General Objections section, must include the verbatim rule text of the cited authority in a `**Rule text:**` field immediately following the objection. The reviewing attorney must be able to read the objection, the cited rule basis, and the operative rule language side by side without opening the rule book — the structural counterpart to the regulatory-compliance-checker's Provision Text Traceability Rule applied to discovery objections.
+
+Examples of compliant form:
+
+- For a proportionality objection: `Proportionality (FRCP 26(b)(1)). **Rule text:** "Parties may obtain discovery regarding any nonprivileged matter that is relevant to any party's claim or defense and proportional to the needs of the case, considering the importance of the issues at stake in the action, the amount in controversy, the parties' relative access to relevant information, the parties' resources, the importance of the discovery in resolving the issues, and whether the burden or expense of the proposed discovery outweighs its likely benefit. ..."`
+- For a contention-interrogatory-premature objection: cite FRCP 33(a)(2) with its verbatim text; if the governing rules are a state code, cite the state-code provision with its verbatim text.
+
+When the firm config supplies a state-code governing-rule set (`firm.discovery_defaults.governing_rules.{matter_type}` not equal to FRCP), the verbatim rule text drawn from the state-code provision — not the FRCP analog — is what appears in the `Rule text:` field. The skill never substitutes the FRCP text where the state-code provision governs.
+
+If the operative rule text is not available to the skill at runtime, the objection is flagged `[[VERIFY: rule text — provide [Rule X] verbatim]]` rather than asserted with the rule-text field omitted. This rule is governed by the `firm.ethics.objection_basis_requires_rule_text` non-overridable config key and applies even if the key is absent from `config.yml`. This is the discovery-side analog of the regulatory-compliance-checker's Provision Text Traceability Rule and the legal-research-memo's Holdings Traceability Rule.
+
 **Process:**
 
 1. Read the full discovery set including definitions and instructions. Flag any definition that is overbroad, vague, or would expand a request beyond its literal terms
@@ -108,7 +121,8 @@ For each request, evaluate whether any of the following applies. Do not assert a
 
 ### Interrogatory No. 1
 **Request:** [Reproduce verbatim]
-**Objections:** [Specific objections, each tied to the basis]
+**Objections:** [Specific objections, each tied to a stated basis with a verbatim rule-text quotation per the Objection-Basis Traceability rule]
+**Rule text:** "[verbatim text of each cited rule; one block per asserted objection where the basis differs]"
 **Response:** [Substantive response drawn only from facts supplied, or a [[CLIENT TO PROVIDE: …]] placeholder]
 
 ### Interrogatory No. 2
@@ -164,8 +178,9 @@ The discovery-response drafter pulls these keys from `config.yml` at runtime:
 - `firm.disclaimers.discovery_response` — firm-standard "AI-assisted draft, not for service without attorney review" disclaimer
 - `firm.discovery_response_save_path` — overrides the default save path `outputs/discovery/[matter-id]-[set]-[YYYY-MM-DD].md`
 - `client.discovery_overrides.{client_id}` — per-client overrides; common entries are a client's standing instruction never to assert proportionality unless burden has been quantified, a client's preference for a more aggressive or more cooperative posture, a client's confidentiality-tier mapping different from the protective order's defaults, and a client's required pre-service review by in-house counsel
+- `firm.ethics.objection_basis_requires_rule_text` — non-overridable boolean codifying the Objection-Basis Traceability hard rule in the Instructions block: every objection asserted in a specific response, and every standing objection in the General Objections section, must include the verbatim text of the cited rule in a `**Rule text:**` field, drawn from the governing rule-set per `firm.discovery_defaults.governing_rules.{matter_type}`. The skill treats this as a hard rule even if absent from `config.yml`. This is the thirteenth non-overridable rule in the repo and the discovery-side analog of the regulatory-compliance-checker's Provision Text Traceability Rule and the legal-research-memo's Holdings Traceability Rule.
 
-If a key is absent from `config.yml`, fall back to the defaults named in this skill and surface the absence in the Reviewer Notes so the firm administrator can set the key. The skill never asserts an objection that has no factual or legal basis even if the firm-standing-objections list permits it — overobjection is sanctionable under FRCP 26(g) and the analogous state-bar rules.
+If a key is absent from `config.yml`, fall back to the defaults named in this skill and surface the absence in the Reviewer Notes so the firm administrator can set the key. The skill never asserts an objection that has no factual or legal basis even if the firm-standing-objections list permits it — overobjection is sanctionable under FRCP 26(g) and the analogous state-bar rules. The skill never relaxes a hard rule based on a missing config value.
 
 ## Cross-References
 
