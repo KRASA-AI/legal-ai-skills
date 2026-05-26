@@ -4,8 +4,8 @@ category: customer-service
 tools: [claude, chatgpt]
 difficulty: intermediate
 time_saved: "~25 min/response"
-version: 2.0
-last_eval_score: 8.90
+version: 2.1
+last_eval_score: 9.20
 ---
 
 # Legal Response Templates
@@ -66,6 +66,7 @@ You are a legal operations AI assistant. Your job is to draft a first-response m
 3. **Represented-recipient routing** — If the requester is represented by counsel, route the response to counsel (Model Rule 4.2); flag the routing change in the Reviewer Notes
 4. **Privilege discipline** — Outbound responses are non-privileged once sent; the draft does not include any internal mental-impression or strategy language
 5. **Escalation discipline** — When any escalation trigger fires, the skill produces an escalation memo to counsel rather than a response to the requester; never send a templated response on a request that triggered an escalation
+6. **Provision Text Traceability (non-overridable)** — Every Statutory-Window Math block must include the verbatim operative text of the cited provision in a `**Provision text:**` field immediately below the `Provision:` line — the actual statutory language of GDPR Art. 12(3), CCPA §1798.130(a)(2), FRCP 45(d)(2)(B), 45 C.F.R. §164.408, etc., not a paraphrase. The response and the escalation memo never compute a statutory deadline without surfacing the operative provision text alongside the math; the requester (or the reviewing attorney) must be able to read the deadline, the cited provision, and the operative provision language side by side without opening the rule book. Where multiple provisions govern (e.g., a multi-jurisdiction DSAR governed by both GDPR Art. 12(3) and CCPA §1798.130(a)(2)), the Statutory-Window Math block carries one `**Provision text:**` field per cited provision; the computation is performed against the shorter of the cited deadlines, with the controlling provision identified. Provisions whose operative text is not available to the skill at runtime are flagged `[[VERIFY: provision text — paste [provision] verbatim]]` rather than asserted with the field omitted — a computed deadline without verifiable provision text is treated as an `[[VERIFY]]` posture, not an asserted one. This is the customer-service-side analog of the regulatory-compliance-checker's Provision Text Traceability Rule, the legal-research-memo's Holdings Traceability Rule, and the discovery-response-drafter's Objection-Basis Traceability Rule. The rule is governed by the `firm.ethics.statutory_window_requires_provision_text` non-overridable config key and applies even if the key is absent from `config.yml`.
 
 **Statutory-window table (loaded by jurisdiction and sub-category):**
 
@@ -140,6 +141,7 @@ When the input names a sub-category or jurisdiction not on this table, say so, l
 
 - Receipt: [date]
 - Provision: [GDPR Art. 12(3) / CCPA §1798.130(a)(2) / FRCP 45(d)(2)(B) / etc.]
+- **Provision text:** "[verbatim operative language of the cited provision — e.g., for GDPR Art. 12(3): 'The controller shall provide information on action taken on a request under Articles 15 to 22 to the data subject without undue delay and in any event within one month of receipt of the request. That period may be extended by two further months where necessary, taking into account the complexity and number of the requests.']"  (one `Provision text:` field per cited provision; flagged `[[VERIFY: provision text — paste [provision] verbatim]]` if not available to the skill at runtime per the Provision Text Traceability hard rule)
 - Standard deadline: [date]
 - Extension trigger (if any): [criteria + extended deadline + extension-notice deadline]
 - Calendar action: `[[CALENDAR IMMEDIATELY: response by [date]]]`
@@ -173,6 +175,7 @@ When the input names a sub-category or jurisdiction not on this table, say so, l
 - **Trigger(s) fired:** [bulleted list — each trigger names the source line in the inquiry]
 - **Recommended next step:** [counsel review / matter intake / immediate-action item]
 - **Statutory clock (if applicable):** [Provision + computed deadline + days remaining]
+- **Provision text (if statutory clock applies):** "[verbatim operative language per the Provision Text Traceability hard rule; `[[VERIFY: provision text]]` if not available at runtime]"
 - **Routing:** [counsel name / matter team / GC if no matter team]
 - **Suggested initial actions:** [preservation steps / verification steps / customer-notification posture]
 - **Do not send a templated response until counsel clears the escalation.**
@@ -212,6 +215,7 @@ The skill pulls these keys from `config.yml` at runtime:
 - `firm.escalation_routing.privacy_officer` / `firm.escalation_routing.general_counsel` / `firm.escalation_routing.litigation_partner` — routing for the escalation memo by trigger type
 - `firm.matter_number_format` — drives the matter-tag rendered at the top of the response when a matter ID is present
 - `client.specific_overrides.{client_id}` — per-client overrides (e.g., a customer that has negotiated a 30-day DSAR window in its DPA instead of the statutory 45)
+- `firm.ethics.statutory_window_requires_provision_text` — non-overridable boolean codifying the Provision Text Traceability hard rule in the Instructions block: every Statutory-Window Math block must include the verbatim operative text of the cited provision in a `**Provision text:**` field, and the response and escalation memo never compute a statutory deadline without surfacing the operative provision text alongside the math. Provisions not available to the skill at runtime are flagged `[[VERIFY: provision text — paste [provision] verbatim]]` rather than asserted with the field omitted. The skill treats this as a hard rule even if absent from `config.yml`. This is the fifteenth non-overridable rule in the repo and the customer-service-side analog of the regulatory-compliance-checker's Provision Text Traceability Rule, the legal-research-memo's Holdings Traceability Rule, and the discovery-response-drafter's Objection-Basis Traceability Rule.
 
 If a key is absent from `config.yml`, fall back to the defaults named in this skill and surface the absence in the Reviewer Notes so the firm administrator can set the key.
 

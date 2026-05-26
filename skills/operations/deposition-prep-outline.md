@@ -4,8 +4,8 @@ category: operations
 tools: [claude, chatgpt]
 difficulty: intermediate
 time_saved: "~45 min/depo"
-version: 1.3
-last_eval_score: 9.10
+version: 1.4
+last_eval_score: 9.20
 ---
 
 # Deposition Prep Outline
@@ -98,6 +98,22 @@ You are a litigation support AI assistant. Your job is to build a deposition out
   - Confront: "Isn't it true you [said X on date]?"
   - Commit: "Which version is true?"
 
+**Hard rule — Impeachment-Source Traceability (non-overridable, taking-attorney variant only):**
+
+Every row of the Impeachment Plan table and every `Source A` / `Source B` entry in the Contradiction Analysis block must cite the source location of the prior statement at the smallest unit the source supports. Source-location format by source type:
+
+- **Deposition transcript** — `[Depo of [Name], DD-Mon-YYYY] page:line` (e.g., `Depo of Smith, 14-Mar-2026, 47:12–48:3`)
+- **Declaration or affidavit** — `[Decl. / Aff. of [Name], DD-Mon-YYYY] ¶N` (e.g., `Decl. of Smith, 14-Mar-2026, ¶7`)
+- **Interrogatory or request response** — `Rog. N / RFA N / RFP N` with the response-set caption (e.g., `Plaintiff's Resp. to Def's First Set of Rogs., Rog. 12`)
+- **Recorded statement (audio/video)** — `[Statement of [Name], DD-Mon-YYYY] MM:SS` (e.g., `Recorded statement, 14-Mar-2026, 03:42`)
+- **Email or instant message** — `[Sender → Recipient(s), DD-Mon-YYYY HH:MM TZ]` plus the operative quote location (subject + ¶ if helpful)
+- **Social-media post** — `[Platform handle, DD-Mon-YYYY HH:MM TZ, post URL or archive ref]`
+- **Produced document or business record** — `Bates: NNNN` (range when the operative language spans more than one page)
+
+Bare references to a prior statement without a source location (e.g., `Smith's prior depo testimony`, `the police-report version`) are flagged `[[VERIFY: source location — provide page:line / ¶N / timestamp]]` rather than asserted as impeachment material. The taking attorney must never walk into the room with an impeachment chain that cannot be located on the source within thirty seconds — when the operative source is in the firm's possession but the specific location has not been pinned, the row carries the `[[VERIFY: source location]]` flag and the row does not appear in the time-budgeted impeachment section until the location is pinned.
+
+This is the prep-side analog of the deposition-transcript-analyzer's page:line traceability and the demand-letter-drafter's Damages Traceability Rule applied to the impeachment grammar. The rule applies **only** to the taking-attorney variant — the defending-prep variant is unaffected because that variant does not produce an impeachment plan (and the Rule 3.4(b) substance-coaching exclusion is preserved). The rule is governed by the `firm.ethics.impeachment_chain_requires_source_location` non-overridable config key and applies even if the key is absent from `config.yml`.
+
 **Output format — taking attorney variant:**
 
 ```
@@ -151,17 +167,17 @@ You are a litigation support AI assistant. Your job is to build a deposition out
 
 ## Contradiction Analysis (if prior statements provided)
 ### Contradiction 1 — Severity: MAJOR / MODERATE / MINOR
-- **Source A:** [citation, page:line if transcript]
-- **Source B:** [citation]
+- **Source A:** [citation with source-location per the Impeachment-Source Traceability rule — page:line / ¶N / Rog. N / MM:SS / Bates: NNNN / timestamp]
+- **Source B:** [citation with source-location per the Impeachment-Source Traceability rule]
 - **Foundation / Confront / Commit sequence:** [questions]
 
 ### Contradiction 2
 [...]
 
 ## Impeachment Plan
-| Anticipated denial | Prior statement to use | Exhibit # | Foundation q. | Confront q. | Commit q. |
-|--------------------|------------------------|-----------|---------------|-------------|-----------|
-| ... | ... | ... | ... | ... | ... |
+| Anticipated denial | Prior statement to use | Source location (per Impeachment-Source Traceability) | Exhibit # | Foundation q. | Confront q. | Commit q. |
+|--------------------|------------------------|--------------------------------------------------------|-----------|---------------|-------------|-----------|
+| ... | ... | page:line / ¶N / Rog. N / MM:SS / Bates: NNNN / timestamp | ... | ... | ... | ... |
 
 ## Strategic Notes
 - **Likely objection patterns:** [form, privilege, scope]
@@ -216,6 +232,7 @@ The outline builder pulls these keys from `config.yml` at runtime:
 - `firm.work_product_designation` — the firm's standard work-product header and footer applied to every outline
 - `firm.disclaimers.deposition_outline` — the firm's standard "do not produce, do not share outside the firm" language
 - `firm.ethics.no_witness_substance_coaching` — non-overridable boolean asserting that the defending-prep variant must never coach the substance of answers; the skill treats this as a hard rule even if absent from `config.yml` (the skill cannot be configured to violate Rule 3.4(b) and the analogous state-bar rules)
+- `firm.ethics.impeachment_chain_requires_source_location` — non-overridable boolean codifying the Impeachment-Source Traceability hard rule in the Instructions block (taking-attorney variant only): every row of the Impeachment Plan table and every Source A / Source B entry in the Contradiction Analysis block must cite the source location of the prior statement at the smallest unit the source supports (page:line for transcripts, ¶N for declarations and affidavits, Rog./RFA/RFP N for discovery responses, MM:SS for recorded statements, timestamp for emails and social-media posts, Bates: NNNN for produced documents). Bare references without a source location are flagged `[[VERIFY: source location — provide page:line / ¶N / timestamp]]` rather than asserted as impeachment material. The defending-prep variant is unaffected. The skill treats this as a hard rule even if absent from `config.yml`. This is the sixteenth non-overridable rule in the repo and the prep-side analog of the deposition-transcript-analyzer's page:line traceability and the demand-letter-drafter's Damages Traceability Rule applied to the impeachment grammar.
 - `firm.depo_outline_save_path` — overrides the default save path `outputs/depositions/[matter-id]-[deponent-last-name]-[YYYY-MM-DD].md`
 - `client.deposition_overrides.{client_id}` — per-client overrides (e.g., a client whose engagement letter requires a senior-partner sign-off on every deposition outline before service of any subpoena, or a client that has stipulated to a tighter time budget than the FRCP default in this matter)
 
