@@ -4,8 +4,8 @@ category: admin
 tools: [claude, chatgpt]
 difficulty: beginner
 time_saved: "~20 min/intake"
-version: 2.0
-last_eval_score: 8.20
+version: 2.1
+last_eval_score: 9.20
 ---
 
 # Document Intake Extractor
@@ -87,6 +87,10 @@ Every Critical field (parties, earliest deadline, governing jurisdiction, SOL/st
 5. **Prospective-client confidentiality** — Treat intake materials as confidential per ABA Model Rule 1.18 even before engagement; mark the extraction as prospective-client work and limit distribution accordingly
 6. **Privilege bleed-through** — If the materials include communications with prior counsel, flag them rather than reproducing them in the extraction — privilege issues may turn on whether the prospective client shares those with the new firm
 
+**Hard rule — Critical Deadline Provision Text Traceability (non-overridable, Critical Deadlines block only):**
+
+Every row of the `## Critical Deadlines` table must include the verbatim operative text of the cited statutory basis in a `**Provision text:**` sub-row immediately following the row — the actual statutory language (e.g., for EEOC charge-filing: "A charge under section 706 of this title shall be filed within one hundred and eighty days after the alleged unlawful employment practice occurred…" (42 U.S.C. §2000e-5(e)(1)); for USCIS RFE: "An applicant shall be granted 87 days to respond to a Request for Evidence…" (8 C.F.R. §103.2(b)(8)(iv)); for state SOL: the state-code provision verbatim; for FRCP-derived deadlines: the FRCP provision verbatim), not a paraphrase. The extraction never asserts a Critical Deadline without surfacing the operative provision text alongside the date and statutory basis; the receiving attorney (or the calendaring system) must be able to read the deadline, the cited statutory basis, and the operative statutory language side by side without opening the rule book. Where the deadline depends on multiple governing provisions (e.g., a multi-jurisdiction employment matter governed by both federal Title VII §2000e-5(e)(1) and a state FEHA filing window), the row carries one `**Provision text:**` sub-row per cited provision; the controlling deadline is the shorter and is identified. Provisions whose operative text is not available to the skill at runtime are flagged `[[VERIFY: provision text — paste [provision] verbatim]]` rather than asserted with the sub-row omitted — a computed deadline without verifiable provision text is treated as an `[[VERIFY]]` posture, not an asserted one. This rule is layered on top of the existing HIGH/MEDIUM/LOW/MISSING confidence rubric (which addresses field-level traceability for the matter-type field pack) and the existing Hard Rule 4 (Deadline discipline; which addresses statutory-basis citation but not verbatim provision text) — neither prior structure is removed, weakened, or reordered. This is the intake-side analog of the regulatory-compliance-checker's Provision Text Traceability Rule and the legal-response-templates v2.1 Provision Text Traceability Rule applied to the Critical Deadlines block of an intake extraction. The rule is governed by the `firm.ethics.intake_deadlines_require_provision_text` non-overridable config key and applies even if the key is absent from `config.yml`.
+
 **Process:**
 
 1. **Intake inventory** — List every source document with its format (email / transcript / PDF / image / note), timestamp if present, and a one-line description. This establishes the source map every field will cite
@@ -139,8 +143,11 @@ Every Critical field (parties, earliest deadline, governing jurisdiction, SOL/st
 | Deadline | Date | Statutory basis | Source cite | Action |
 |----------|------|-----------------|-------------|--------|
 | SOL / filing deadline | ... | [governing rule] | S# | `[[CALENDAR IMMEDIATELY]]` |
+|   **Provision text:** "[verbatim operative language of the cited statutory basis — per the Critical Deadline Provision Text Traceability hard rule; one sub-row per cited provision in multi-jurisdiction matters; flagged `[[VERIFY: provision text — paste [provision] verbatim]]` if not available to the skill at runtime]" | | | | |
 | Response deadline | ... | ... | ... | ... |
+|   **Provision text:** "[verbatim operative language]" | | | | |
 | Statutory notice / charge-filing deadline | ... | ... | ... | ... |
+|   **Provision text:** "[verbatim operative language]" | | | | |
 
 ## Narrative Summary (chronological)
 [4–10 sentences; facts only; no legal characterization; every factual sentence carries a source cite in parentheses.]
@@ -208,8 +215,21 @@ field_pack_gaps: [count and list]
 - **Next skill:** Hand this extraction to `skills/admin/client-intake-summary.md` for engagement-decision synthesis
 
 ## Firm Config Keys Used
-- [Firm name, matter-number format, matter-type taxonomy, licensure jurisdictions, intake-record retention posture — pulled from config.yml]
+- [Firm name, matter-number format, matter-type taxonomy, licensure jurisdictions, intake-record retention posture, `firm.ethics.intake_deadlines_require_provision_text` (non-overridable) — pulled from config.yml]
 ```
+
+## Firm Config Keys Used
+
+The extractor pulls these keys from `config.yml` at runtime:
+
+- `firm.name` — appears in the extraction-report header and the Handoff Block matter-system metadata
+- `firm.matter_number_format` — validates the matter-number format if a matter number is referenced in the materials; surfaces format mismatches in Reviewer Notes
+- `firm.matter_type_taxonomy` — overrides the default 11-category taxonomy with the firm's preferred category set
+- `firm.licensure_jurisdictions` — drives the "Firm licensure in governing jurisdiction" header field; jurisdictions outside this list flag as `CHECK` rather than `Y`
+- `firm.intake.retention_posture` — `pre_engagement_segregated` (default) or `full_intake`; drives the prospective-client status header and the distribution disclaimer in Reviewer Notes
+- `firm.ethics.intake_deadlines_require_provision_text` — non-overridable boolean codifying the Critical Deadline Provision Text Traceability hard rule in the Instructions block: every row of the Critical Deadlines table must include the verbatim operative text of the cited statutory basis in a `**Provision text:**` sub-row immediately following the row, and the extraction never asserts a Critical Deadline without surfacing the operative provision text alongside the date and statutory basis. Provisions not available to the skill at runtime are flagged `[[VERIFY: provision text — paste [provision] verbatim]]` rather than asserted with the sub-row omitted. The skill treats this as a hard rule even if absent from `config.yml`. This is the seventeenth non-overridable rule in the repo and the intake-side analog of the regulatory-compliance-checker's Provision Text Traceability Rule and the legal-response-templates v2.1 Provision Text Traceability Rule applied to the Critical Deadlines block.
+
+If a key is absent from `config.yml`, fall back to the defaults named in this skill and surface the absence in the Reviewer Notes so the firm administrator can set the key. The no-fabrication rule, the source-cite-every-field rule, and the Critical Deadline Provision Text Traceability rule are **never** overridden by config — silent fields remain MISSING, every extracted field carries a source citation, and every Critical Deadline row carries verbatim provision text regardless of any firm convention.
 
 **Output requirements:**
 
