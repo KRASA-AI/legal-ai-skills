@@ -4,8 +4,8 @@ category: admin
 tools: [claude, chatgpt]
 difficulty: beginner
 time_saved: "~20 min/intake"
-version: 2.1
-last_eval_score: 9.20
+version: 2.2
+last_eval_score: 8.50
 ---
 
 # Document Intake Extractor
@@ -244,4 +244,86 @@ If a key is absent from `config.yml`, fall back to the defaults named in this sk
 
 ## Example Output
 
-> [This section will be populated by the eval system with a reference example. For now, run the skill with a sample mixed-format intake (email + police report + voicemail transcript) to see output quality.]
+A worked example on a mixed-format personal-injury intake: a prospective-client email, an attached police report PDF, and a voicemail transcript. Abbreviated to the high-value blocks (full runs also produce the Financial Details, Documents-Referenced, Legal-Issues, and Reviewer-Notes blocks).
+
+**Input (three sources):**
+
+- S1 — Email from prospective client (2026-05-28 09:12): "I was rear-ended at Main & 3rd on May 5th. The other driver ran the red light. I've been seeing Dr. Patel for neck pain since. Their insurance is GEICO. I think I have until next year to file? My wife Maria was in the car too."
+- S2 — Police report PDF (incident date 2026-05-05): Report #SF-2026-1183; reporting parties "Jordan Lee" (PC) and "Casey Romero" (adverse driver); citation issued to Romero for CVC 21453(a) (red light).
+- S3 — Voicemail transcript (2026-05-29): "...also I had a prior neck thing back in 2019, didn't want to forget to mention it. And actually the accident might have been the 6th, not the 5th, I'm not 100% sure."
+
+**Output (abbreviated):**
+
+```
+## Document Intake Extraction — Jordan Lee — Personal Injury (auto)
+
+- **Extraction date:** 2026-05-29
+- **Materials submitted:** 3 (email, PDF, voicemail transcript)
+- **Matter type (identified):** Personal injury — motor vehicle
+- **Firm licensure in governing jurisdiction:** Y (California — from config)
+- **Overall confidence:** Medium (one date contradiction; one prior-injury disclosure)
+- **Prospective-client status:** Rule 1.18 — confidentiality applies pre-engagement
+- **Earliest critical deadline:** `[[CALCULATE SOL: Cal. Code Civ. Proc. §335.1 — 2-year personal-injury SOL; anchor date disputed, see contradiction index]]`
+
+## Source Inventory
+| # | Source | Format | Timestamp | One-line description |
+|---|--------|--------|-----------|----------------------|
+| S1 | Email, PC to firm@ | Email | 2026-05-28 09:12 | PC describes rear-end collision, treatment, insurer |
+| S2 | Police report #SF-2026-1183 | PDF | 2026-05-05 | Officer report; citation to adverse driver |
+| S3 | Voicemail transcript | Transcript | 2026-05-29 | PC adds prior injury; questions incident date |
+
+## Parties & Conflict-Check Trigger List
+| Role | Name | Aliases / Entities | Confidence | Source cite |
+|------|------|--------------------|------------|-------------|
+| Prospective client | Jordan Lee | — | HIGH | S2 p.1; S1 ¶1 |
+| Material third party | Maria Lee (spouse, passenger) | — | HIGH | S1 ¶1 |
+| Adverse party | Casey Romero | — | HIGH | S2 p.1 |
+| Adverse insurer | GEICO | — | HIGH | S1 ¶1 |
+| Treating provider | Dr. Patel | — | MEDIUM | S1 ¶1 (first name not given) |
+
+## Matter-Type Field Pack — Personal injury
+| Field | Value | Confidence | Source cite | Follow-up if < HIGH |
+|-------|-------|------------|-------------|---------------------|
+| Date of incident | 2026-05-05 (disputed — see S3) | MEDIUM | S2 p.1 | Confirm 05-05 vs. 05-06 with PC |
+| Mechanism | Rear-end; adverse driver ran red light | HIGH | S2 (CVC 21453(a) citation) | — |
+| Injuries | Neck pain | HIGH | S1 ¶1 | — |
+| Treating providers | Dr. Patel | MEDIUM | S1 ¶1 | Obtain full name + clinic |
+| Police report number | SF-2026-1183 | HIGH | S2 p.1 | — |
+| Adverse insurance | GEICO | HIGH | S1 ¶1 | Obtain policy/claim number |
+| Own insurance (UM/UIM) | — | MISSING | — | Ask PC for own auto policy + UM/UIM |
+| Prior injury history | 2019 neck injury | HIGH | S3 | Obtain prior treatment records |
+| Governing state SOL | Cal. CCP §335.1 (2 yr) | HIGH | (statute) | — |
+
+## Critical Deadlines
+| Deadline | Date | Statutory basis | Source cite | Action |
+|----------|------|-----------------|-------------|--------|
+| PI statute of limitations | 2028-05-05 or 2028-05-06 (anchor disputed) | Cal. Code Civ. Proc. §335.1 | S2 / S3 | `[[CALCULATE SOL]]` — resolve anchor date first |
+|   **Provision text:** "Within two years: An action for assault, battery, or injury to, or for the death of, an individual caused by the wrongful act or neglect of another." (Cal. Code Civ. Proc. §335.1) | | | | |
+
+## Cross-Document Contradiction Index
+| # | Field | Source A | Source B | Severity | Proposed resolution |
+|---|-------|----------|----------|----------|---------------------|
+| 1 | Date of incident | S2 "2026-05-05" | S3 "might have been the 6th" | MAJOR (drives SOL anchor) | Ask PC to confirm; pull report's officer-observed date as controlling unless PC documents otherwise |
+
+## Follow-Up Checklist
+### Critical field gaps (must resolve before matter can open)
+1. Confirm incident date (05-05 vs. 05-06) — controls the SOL anchor.
+2. Obtain PC's own auto policy and UM/UIM coverage (currently MISSING).
+
+### Documents to request
+1. Dr. Patel treatment records (current) and 2019 prior-injury records.
+2. GEICO claim number and any correspondence.
+
+## Handoff Block for client-intake-summary.md
+```yaml
+intake_source: email + police report + voicemail
+matter_type: personal_injury_auto
+prospective_client: { name: Jordan Lee, contact: "[[VERIFY: phone/email]]" }
+critical_deadlines_extracted: ["Cal. CCP 335.1 SOL — anchor date DISPUTED"]
+conflict_check_trigger_list: [Jordan Lee, Maria Lee, Casey Romero, GEICO, Dr. Patel]
+field_pack_populated: Y
+field_pack_gaps: 2 (own UM/UIM coverage MISSING; treating-provider full name)
+```
+```
+
+Note the no-fabrication discipline: the SOL is not asserted as a single date because the incident date itself is contradicted across sources (MAJOR contradiction), and the missing UM/UIM coverage is marked MISSING rather than assumed — both are surfaced as blockers before the matter can open.

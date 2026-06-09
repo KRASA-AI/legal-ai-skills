@@ -4,8 +4,8 @@ category: _shared
 tools: [claude, chatgpt]
 difficulty: beginner
 time_saved: "~15 min/response"
-version: 2.2
-last_eval_score: 9.20
+version: 2.3
+last_eval_score: 8.20
 ---
 
 # Review Responder
@@ -167,4 +167,74 @@ If a key is absent from `config.yml`, fall back to the defaults named in this sk
 
 ## Example Output
 
-> [This section will be populated by the eval system with a reference example. For now, run the skill with a sample review to see output quality.]
+A complete worked example for a negative review on Google Business Profile from a reviewer the firm cannot identify as a client.
+
+**Input:**
+
+- Platform: Google Business Profile
+- Review text: "Worst experience ever. I paid this firm a retainer for my custody case and they did NOTHING for three months. They never returned my calls and lost in court. Avoid Smith & Lee at all costs."
+- Reviewer identity (as shown): "D. Martinez" — firm cannot confirm whether this person was a client
+- Star rating: 1★
+- Verified representation: Cannot confirm
+- Response tone target: De-escalating
+- Jurisdiction / bar: California
+- Matter facts to avoid: any reference to a custody matter, retainer, or court outcome
+
+**Output:**
+
+```
+## Review Response — Google Business Profile — D. Martinez
+
+- **Platform:** Google Business Profile
+- **Sentiment:** Negative
+- **Scenario:** Negative review, unknown reviewer
+- **Ethics flag:** YELLOW (review before post — confirm reviewer is not a current client mid-matter)
+- **Character/length target:** 3–4 sentences (Google norm)
+
+## Drafted Response
+Thank you for taking the time to share your concerns. We take all feedback
+seriously and hold ourselves to a high standard of communication and service.
+Because of our professional obligations, we can't discuss any specific
+situation in a public forum, but we'd genuinely welcome the chance to listen
+and help — please reach our office directly at (555) 123-4567 and ask for our
+client-relations coordinator.
+
+— Smith & Lee LLP
+
+## Ethics Compliance Notes
+- **Confidentiality check:** The draft neither confirms nor denies that the
+  reviewer was ever a client. It does not reference a custody matter, a
+  retainer, calls, or any court outcome — even though the reviewer raised them.
+- **Matter facts touched:** NONE (required and met)
+- **Jurisdiction rules applied:** California State Bar Formal Op. 2018-196;
+  ABA Formal Op. 496 (2021)
+  - **Opinion text:** `[[VERIFY: ethics opinion text — paste Cal. Op. 2018-196
+    operative language verbatim]]` (skill did not have the verbatim text at
+    runtime; do not assert the holding without it)
+  - **Controlling opinion:** California (attorney's licensing jurisdiction);
+    confidentiality bars rebuttal even where the reviewer disclosed facts first
+- **Retaliation / tone check:** PASS — no questioning of the reviewer's memory,
+  motives, or mental state; no implication they misunderstood
+- **Advertising rule check (MR 7.1 / Cal. RPC 7.1):** PASS — no factual claims
+  about outcomes or comparisons
+
+## Suggested Offline Follow-Up
+If internal records identify this reviewer as a current client in an open
+matter, the responsible attorney (not marketing) should make direct contact
+before anything is posted, and the public response should be held. If the
+reviewer is a former client or non-client, the client-relations coordinator
+may invite a private call as drafted.
+
+## Escalation (if RED)
+- **Trigger:** None met. NOTE: the review borders on a malpractice narrative
+  ("did NOTHING," "lost in court"). If the firm reads it as alleging
+  malpractice, treat as RED and route to General Counsel before posting.
+- **Route to:** General Counsel (only if the malpractice reading is adopted)
+
+## Disclaimers
+- AI-assisted draft. An authorized member of the firm must approve before posting.
+- Response follows the general rule against confirming or denying representation;
+  California-specific opinions may impose additional constraints.
+```
+
+Note the two ethics moves a non-specialist would likely get wrong: (1) the draft does **not** rebut "lost in court" or "never returned my calls" even though doing so is tempting — rebutting would confirm representation and disclose matter facts; (2) the opinion text is flagged `[[VERIFY]]` rather than fabricated, because the skill did not have the verbatim opinion language at runtime.

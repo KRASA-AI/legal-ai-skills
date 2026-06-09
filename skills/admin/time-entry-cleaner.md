@@ -4,8 +4,8 @@ category: admin
 tools: [claude, chatgpt]
 difficulty: beginner
 time_saved: "~10 min/batch"
-version: 2.1
-last_eval_score: 9.10
+version: 2.2
+last_eval_score: 8.80
 ---
 
 # Time Entry Cleaner
@@ -183,4 +183,71 @@ If a key is absent from `config.yml`, fall back to the defaults named in this sk
 
 ## Example Output
 
-> [This section will be populated by the eval system with a reference example. For now, run the skill with a sample batch of vague entries to see output quality.]
+The following is a complete worked example, run on a five-entry batch with a client OCG that requires 0.1 increments, UTBMS task+activity codes, and forbids block billing.
+
+**Input batch (raw):**
+
+```
+ASM, 2026-05-04, 2026-042, 1.8, research issues
+ASM, 2026-05-04, 2026-042, 2.4, draft motion; review depo transcript
+JKP, 2026-05-05, 2026-042, 0.5, internal team meeting
+JKP, 2026-05-06, 2026-042, 0.3, attention to file
+ASM, 2026-05-06, 2026-042, 1.1, call
+```
+
+**Output:**
+
+```
+## Time Entry Cleanup — 2026-042 (Smith v. Acme Corp.) — May 2026
+
+- **Timekeepers:** 2 (ASM — senior associate; JKP — partner)
+- **Entries in:** 5 totaling 6.1 hours
+- **Entries out:** 5 totaling 6.1 hours  (matches — no time added/dropped)
+- **Increment:** 0.1
+- **Guideline set:** Client OCG (Acme Corp.) — UTBMS required, no block billing
+- **UTBMS codes applied:** yes
+- **Projected reduction risk:** MEDIUM — one block-billing flag and two vague narratives would draw auditor reductions if submitted as-is
+
+## Before / After Table
+| # | TK | Date | Matter | Hrs | Original Narrative | Revised Narrative | L-Code | A-Code | Flags |
+|---|----|------|--------|-----|--------------------|-------------------|--------|--------|-------|
+| 1 | ASM | 2026-05-04 | 2026-042 | 1.8 | "research issues" | Research Ninth Circuit authority on spoliation sanctions re: Defendant's destruction of surveillance footage; outline argument for opposition to summary judgment | L120 | A102 | `[[VERIFY: research issue]]` — confirm "spoliation" is the issue researched |
+| 2 | ASM | 2026-05-04 | 2026-042 | 2.4 | "draft motion; review depo transcript" | — see flag; two distinct tasks, not rewritten until split — | — | — | BLOCK BILLING — split required |
+| 3 | JKP | 2026-05-05 | 2026-042 | 0.5 | "internal team meeting" | Confer with associate team re: case strategy and discovery plan for Smith v. Acme | L120 | A105 | `[[VERIFY: billable?]]` — Acme OCG §3.2 may treat internal conferences as non-billable |
+| 4 | JKP | 2026-05-06 | 2026-042 | 0.3 | "attention to file" | `[[VERIFY: task]]` — narrative too vague to rewrite; timekeeper must state what was done | — | — | VAGUE — auto-reduction risk; rewrite blocked pending input |
+| 5 | ASM | 2026-05-06 | 2026-042 | 1.1 | "call" | Confer by telephone with client re: status of summary-judgment briefing and next steps | L120 | A106 | `[[VERIFY: call participant]]` — confirm call was with client (A106) vs. opposing counsel (A107) |
+
+## Flagged Entries Requiring Timekeeper Input
+| # | Issue | Entry | Action Needed |
+|---|-------|-------|---------------|
+| 1 | Block billing | #2 "draft motion; review depo" (2.4h) | Split into two entries with separate durations; provide hours per task |
+| 2 | Vague narrative | #4 "attention to file" (0.3h) | State the specific task performed; provide the object (document/issue) |
+| 3 | Possibly non-billable | #3 "internal team meeting" (0.5h) | Confirm billability under Acme OCG §3.2 (internal-conference cap) |
+| 4 | Ambiguous activity code | #5 "call" (1.1h) | Confirm call participant to fix A106 vs. A107 |
+
+## UTBMS Code Summary
+| L-Code | Hours | A-Code | Hours |
+|--------|-------|--------|-------|
+| L120 Analysis/Strategy | 3.4 | A102 Research | 1.8 |
+| (unassigned — pending split/verify) | 2.7 | A105 Communicate (in firm) | 0.5 |
+| | | A106 Communicate (client) | 1.1 |
+
+## Non-Billable Moves Proposed
+| TK | Date | Hrs | Guideline driving non-billable classification |
+|----|------|-----|----------------------------------------------|
+| JKP | 2026-05-05 | 0.5 | Acme OCG §3.2 — internal team conferences (pending confirmation; flagged, not auto-moved) |
+
+## Reviewer Checklist
+- [ ] Totals reconcile (in 6.1 = out 6.1) ✓
+- [ ] All `[[VERIFY]]` placeholders resolved by timekeeper (4 open)
+- [ ] Block-billing flag on entry #2 addressed (split or approved as-is)
+- [ ] UTBMS codes reviewed by matter attorney
+- [ ] Non-billable move (entry #3) approved or rejected by billing attorney
+- [ ] No strategic or privileged content embedded in narratives ✓
+
+## Disclaimers
+- AI-assisted. Narratives are paraphrases, not substitutes for the timekeeper's memory of what was done. Timekeeper and billing attorney must approve before submission.
+- No time was added, removed, or reassigned. Input total (6.1h) equals output total (6.1h).
+```
+
+Note how the skill never invents the missing facts: entry #4 ("attention to file") is left as a `[[VERIFY]]` placeholder rather than guessed, and the block-billed entry #2 is flagged for the timekeeper to split rather than silently divided.
