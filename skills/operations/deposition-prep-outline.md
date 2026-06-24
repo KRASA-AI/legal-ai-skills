@@ -4,8 +4,8 @@ category: operations
 tools: [claude, chatgpt]
 difficulty: intermediate
 time_saved: "~45 min/depo"
-version: 1.4
-last_eval_score: 9.20
+version: 1.5
+last_eval_score: 8.50
 ---
 
 # Deposition Prep Outline
@@ -240,4 +240,94 @@ If a key is absent from `config.yml`, fall back to the defaults named in this sk
 
 ## Example Output
 
-> [This section will be populated by the eval system with a reference example. For now, run the skill with sample documents and prior statements to see output quality.]
+The following is an abbreviated real worked example for the **taking-attorney / fact-witness** variant with prior statements available — the variant that exercises the Impeachment-Source Traceability hard rule. It is trimmed to one theme and two contradictions to keep it readable; a live outline would carry all themes.
+
+**Sample input provided to the skill:**
+
+> - Deposition type: Fact witness
+> - Governing rules: FRCP, 7-hour limit
+> - Case: Reyes v. Brightway Foods (slip-and-fall; we represent plaintiff Reyes)
+> - Deponent: T. Whitfield, store manager on duty
+> - Prior statements: (a) Whitfield's signed declaration, 02-Apr-2026; (b) Whitfield's recorded statement to the insurer, 11-Jan-2026; (c) incident report, Bates BW-000142
+> - Key issues: notice of the spill (how long it was on the floor before the fall); inspection-log compliance
+> - Goals: pin the time the spill existed; establish missed inspection; impeach on inconsistent "I cleaned it immediately" claims
+
+**Skill output (excerpt):**
+
+```
+## Deposition Outline — T. Whitfield — Fact witness
+
+- **Case:** Reyes v. Brightway Foods, No. [[VERIFY: case no.]]
+- **Date / time / location:** [[VERIFY]] / remote
+- **Governing rules / time limit:** FRCP — 7 hours, one day
+- **Exhibit-numbering convention:** Plaintiff's Exhibit 1 (per firm config)
+- **Prepared by:** [attorney], AI-assisted
+
+## Deposition Goals
+1. Pin the elapsed time the spill was on the floor before Reyes fell
+2. Establish that the required hourly inspection was not performed in the relevant window
+3. Impeach the "cleaned it immediately" claim against the prior recorded statement
+
+## Time Budget (total < 7h; 30-min reserve)
+| Section | Minutes | Notes |
+|---------|---------|-------|
+| Background & foundation | 20 | manager role, shift, training |
+| Theme 1 — Notice / timeline | 75 | spill duration, inspection log |
+| Theme 2 — Inspection compliance | 60 | Ex. 2 inspection log |
+| Impeachment | 30 | recorded-statement chain |
+| Reserve | 30 | |
+
+## Topic Outline
+### Topic 1: Notice — how long the spill existed
+#### Background & foundation
+- You were the manager on duty on the date of the incident, correct?
+- Part of your job is to ensure the floors are safe for customers?
+
+#### Substantive / document-pinning (Exhibit refs)
+- I'm showing you what's marked **Ex. 1**: the incident report you signed. Is this your signature? — **Ex. 1**: Incident report (Bates BW-000142)
+- The report lists the time of the fall as 3:14pm. Do you see that?
+- When did you first become aware of the spill? — **Ex. 2**: Inspection log
+
+#### Pin-down
+- So between the last logged inspection and Ms. Reyes's fall, no inspection of that aisle occurred — correct?
+
+## Exhibit List
+| Ex. # | Document | Bates / source | Used in Topic(s) | Copy ready? |
+|-------|----------|----------------|------------------|-------------|
+| 1 | Incident report | BW-000142 | 1 | Y |
+| 2 | Inspection log, date of incident | BW-000150–151 | 1, 2 | Y |
+
+## Contradiction Analysis
+### Contradiction 1 — Severity: MAJOR
+- **Source A:** Recorded statement, 11-Jan-2026, 03:42 — Whitfield says he "cleaned the spill within a minute of seeing it"
+- **Source B:** Decl. of Whitfield, 02-Apr-2026, ¶6 — states he "directed an associate to place a cone and clean the area"
+- **Foundation / Confront / Commit sequence:**
+  - Foundation: "You gave a recorded statement to the insurer on January 11, under oath that it was true and accurate?"
+  - Confront: "In that statement, didn't you say you cleaned the spill yourself within a minute?"
+  - Commit: "So which is correct — you cleaned it yourself, or you directed an associate?"
+
+### Contradiction 2 — Severity: MODERATE
+- **Source A:** Incident report, Bates BW-000142 — time of fall logged as 3:14pm
+- **Source B:** Recorded statement, 11-Jan-2026, 05:10 — Whitfield estimates the fall happened "around 2:45"
+- **Foundation / Confront / Commit sequence:** [Foundation/Confront/Commit questions as above]
+
+## Impeachment Plan
+| Anticipated denial | Prior statement to use | Source location | Exhibit # | Foundation q. | Confront q. | Commit q. |
+|--------------------|------------------------|-----------------|-----------|---------------|-------------|-----------|
+| "I cleaned it immediately myself" | Recorded statement vs. declaration conflict | Recorded statement, 11-Jan-2026, 03:42 / Decl. 02-Apr-2026 ¶6 | — | "You signed this declaration?" | "But you told the insurer you cleaned it yourself?" | "Which is true?" |
+| "The inspection was done on time" | Inspection log gap | Bates BW-000150–151 | Ex. 2 | "This is your store's log?" | "There's no entry between 1:00 and the 3:14 fall?" | "So no inspection happened in that window?" |
+| "I don't recall when I saw it" | [[VERIFY: source location — no pinned prior statement on first-awareness time; do not place in time-budgeted impeachment until located]] | [[VERIFY]] | — | — | — | — |
+
+## Strategic Notes
+- **Likely objection patterns:** form objections on the compound timeline questions — keep them short and single-fact
+- **Evasion patterns to expect:** "I don't recall" on the inspection timing — have Ex. 2 staged to refresh
+- **Break triggers:** call a break after the notice admissions, before launching impeachment
+- **Video considerations:** the "which is true" commit on Contradiction 1 is a likely trial-replay moment
+
+## Reviewer Notes
+- **Placeholders:** case number; depo date; the unpinned "first-awareness" impeachment row (held out of the time budget per the traceability rule)
+- **Open strategic calls:** whether to use Contradiction 2 (time discrepancy) live or save for trial
+- **Work product designation:** Attorney work product — do not produce
+```
+
+**Why this is the target quality:** every impeachment row and contradiction source carries a located citation at the smallest unit the source supports (`03:42` for the recorded statement, `¶6` for the declaration, `BW-000150–151` for the log), so the taking attorney can find each prior statement on the source in seconds. The one denial with no pinned source is flagged `[[VERIFY: source location]]` and explicitly held out of the time-budgeted impeachment section rather than being asserted as usable impeachment material — exactly what the Impeachment-Source Traceability rule requires.

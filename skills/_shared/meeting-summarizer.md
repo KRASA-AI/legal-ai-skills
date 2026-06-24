@@ -4,8 +4,8 @@ category: _shared
 tools: [claude, chatgpt]
 difficulty: beginner
 time_saved: "~15 min/meeting"
-version: 2.4
-last_eval_score: 9.20
+version: 2.5
+last_eval_score: 8.50
 ---
 
 # Meeting Summarizer
@@ -202,4 +202,104 @@ If a key is absent from `config.yml`, fall back to the defaults named in this sk
 
 ## Example Output
 
-> [This section will be populated by the eval system with a reference example. For now, run the skill with sample input to see output quality.]
+The following is a real worked example for a **Mixed-privilege** meeting — the posture that exercises the Privilege-Posture Audit Trail hard rule. It shows the skill segmenting topics by privilege class, tagging each, sourcing the boundary to note paragraphs, and drawing the admissions block only from the non-privileged segment.
+
+**Sample input provided to the skill:**
+
+> - Meeting type: other — internal case strategy that turned into a meet-and-confer call midway
+> - Privilege posture: Mixed
+> - Matter: 2026-051, Voss Manufacturing v. Delta Components (breach of supply contract; we represent Voss, plaintiff)
+> - Date/duration: 18-Jun-2026, 2:00–2:50pm (50 min)
+> - Raw notes (paragraph-numbered):
+>   ¶1 Internal, present: M. Tran (partner), L. Okafor (associate), me (paralegal). Tran: our damages theory should lead with lost-volume, not cover. Okafor to pull the unit-margin data from client by Friday.
+>   ¶2 Tran: weakest point is the 12-month notice clause; if Delta argues we waived by continuing to order, we need the email where their VP acknowledged the breach. Okafor flagged we haven't located it yet.
+>   ¶3 [2:25pm — dialed in opposing counsel R. Singh for meet-and-confer] Singh agreed to extend Delta's expert disclosure deadline to 31-Jul. We agreed to produce the remaining purchase orders by 25-Jun.
+>   ¶4 Singh stated "Delta doesn't dispute the POs were received, only that they were conforming." Tran noted that's useful — sounds like receipt is conceded.
+>   ¶5 [Singh dropped off, 2:45pm] Tran: don't put the lost-volume theory in writing to Singh yet. Okafor to draft the PO production cover letter.
+
+**Skill output:**
+
+```
+## Meeting Summary — 2026-051 — Mixed (internal strategy + meet-and-confer)
+
+- **Matter:** 2026-051 — Voss Manufacturing v. Delta Components
+- **Date / duration:** 18-Jun-2026, 2:00–2:50pm (50 min)
+- **Meeting type:** Mixed — internal case strategy (¶1–2, ¶5) + opposing-counsel meet-and-confer (¶3–4)
+- **Privilege posture:** Mixed (segments tagged below)
+- **Distribution:** File only — internal segments are work product; do NOT forward to client or opposing counsel without redaction
+- **Prepared by:** [paralegal], AI-assisted
+
+## Attendees
+| Name | Role | Firm / Party | Timekeeper |
+|------|------|--------------|------------|
+| M. Tran | Partner | Our firm | Y |
+| L. Okafor | Associate | Our firm | Y |
+| [paralegal] | Paralegal | Our firm | [[VERIFY: billable?]] |
+| R. Singh | Opposing counsel | Delta Components | N (present ¶3–4 only) |
+
+## Summary by Topic
+### Topic 1: Damages theory — lead with lost-volume (privilege: WP)
+Tran directed that the damages presentation lead with a lost-volume seller theory rather than cover damages. Okafor to obtain unit-margin data from the client by Friday.
+
+### Topic 2: Notice-clause / waiver vulnerability (privilege: WP)
+Tran identified the 12-month notice clause as the weakest point and flagged a waiver-by-continued-ordering risk. Mitigating evidence (the Delta VP's acknowledgment email) has not yet been located.
+
+### Topic 3: Scheduling agreements with opposing counsel (privilege: Not privileged)
+On the record with Singh: Delta's expert disclosure deadline extended to 31-Jul-2026; Voss to produce remaining purchase orders by 25-Jun-2026.
+
+### Topic 4: Opposing counsel's statement on the POs (privilege: Not privileged)
+Singh stated Delta does not dispute receipt of the purchase orders, only their conformity.
+
+### Topic 5: Hold lost-volume theory from opposing counsel (privilege: WP)
+Tran directed that the lost-volume theory not be disclosed to Singh in writing yet. Okafor to draft the PO production cover letter.
+
+## Decisions
+1. Damages presentation will lead with lost-volume theory — Decider: Tran
+2. Voss will produce remaining purchase orders by 25-Jun-2026 — Decider: Tran (agreed with Singh)
+3. Lost-volume theory to be withheld from opposing counsel pending strategy — Decider: Tran
+
+## Open Questions
+1. Locate the Delta VP email acknowledging the breach — owner to resolve: Okafor
+2. Is the paralegal a billable timekeeper on this matter? — owner: billing admin
+
+## Action Items
+| # | Owner | Action | Deliverable | Deadline |
+|---|-------|--------|-------------|----------|
+| 1 | Okafor | Obtain unit-margin data from client | Margin dataset | Fri 20-Jun-2026 |
+| 2 | Okafor | Draft PO production cover letter | Cover letter draft | Before 25-Jun-2026 |
+| 3 | Team | Produce remaining purchase orders | Document production | 25-Jun-2026 |
+
+## Admissions / Commitments (non-privileged segment only — ¶3–4)
+- **Opposing counsel concession (potentially useful):** Singh stated Delta "doesn't dispute the POs were received, only that they were conforming" (¶4). Receipt of the POs appears conceded; confirm whether this is repeated in writing or only oral before relying on it.
+- **Our on-the-record commitment:** Voss agreed to produce remaining POs by 25-Jun-2026 (¶3) — calendar and treat as binding.
+
+## Suggested Time Entries (if flagged)
+| Timekeeper | Date | Duration | UTBMS Task | UTBMS Activity | Description |
+|------------|------|----------|------------|----------------|-------------|
+| M. Tran | 18-Jun-2026 | 0.8 | L120 | A101 | Attend internal case strategy conference and meet-and-confer re: damages theory and discovery scheduling |
+| L. Okafor | 18-Jun-2026 | 0.8 | L120 | A101 | Attend internal case strategy conference and meet-and-confer re: damages theory and discovery scheduling |
+
+## Privilege Footer
+Segments ¶1–2 and ¶5 are attorney work product. This summary is for internal file use only and must not be produced or forwarded outside the firm without redaction of the work-product segments.
+
+## Reviewer Notes (always present — fast-path transparency)
+- **Matter context:** extracted from raw input ("2026-051") — match against firm.matter_number_format: HIGH
+- **Date / duration:** provided (50 min)
+- **Attendees:** inferred from notes — Tran/Okafor/Singh HIGH; paralegal billable status LOW → [[VERIFY: billable?]]
+- **Privilege posture:** provided — Mixed; per-topic tags applied below
+- **Billable flag:** ON for Tran, Okafor (timekeepers); paralegal pending verification
+- **Distribution list:** defaulted to "File only" (Mixed posture → riskier default avoided; not auto-routed to client)
+- **Defaulted inputs:** distribution list (privilege-posture default)
+- **Override invitation:** "If any default is wrong for this meeting, re-run with explicit input"
+- **Placeholders:** paralegal billable status
+- **Privilege concerns:** Mixed meeting — work-product segments (¶1–2, ¶5) must not be co-produced if the meet-and-confer segment (¶3–4) is ever produced in discovery
+- **Privilege boundaries:** (per the Privilege-Posture Audit Trail hard rule)
+  - Topic 1 → WP → source: ¶1
+  - Topic 2 → WP → source: ¶2
+  - Topic 3 → Not privileged → source: ¶3
+  - Topic 4 → Not privileged → source: ¶4
+  - Topic 5 → WP → source: ¶5
+- **Follow-up cadence:** check before 25-Jun-2026 PO production deadline
+```
+
+**Why this is the target quality:** the hard part of a mixed meeting is keeping the privileged strategy (lost-volume theory, waiver vulnerability) cleanly separable from the discoverable meet-and-confer record. Each topic carries a privilege tag sourced to a specific note paragraph, the Admissions block draws *only* from the two non-privileged topics, the distribution defaults to "File only" rather than risking a client send, and the privilege-boundary map lets the producing attorney redact the work-product segments in seconds if the meet-and-confer portion is ever produced.

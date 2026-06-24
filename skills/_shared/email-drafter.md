@@ -4,8 +4,8 @@ category: _shared
 tools: [claude, chatgpt]
 difficulty: beginner
 time_saved: "~10 min/use"
-version: 2.2
-last_eval_score: 9.20
+version: 2.3
+last_eval_score: 8.30
 ---
 
 # Email Drafter
@@ -152,4 +152,65 @@ If a key is absent from `config.yml`, fall back to the defaults named in this sk
 
 ## Example Output
 
-> [This section will be populated by the eval system with a reference example. For now, run the skill with sample input to see output quality.]
+The following is a real worked example for the **opposing-counsel** archetype — the archetype that exercises the Archetype-Posture Hedging hard rule. It shows the skill turning a paralegal's rough notes into a send-ready draft with hedges applied, placeholders surfaced, and reviewer notes that make every posture decision visible to the supervising attorney before send.
+
+**Sample input provided to the skill:**
+
+> - Archetype: opposing counsel
+> - Sender: J. Ortiz, associate, admitted CA
+> - Recipient: Dana Reyes, counsel for defendant Acme Logistics
+> - Matter: 2026-042, Smith v. Acme Logistics (rear-end MVA, our client plaintiff)
+> - Privilege posture: Not privileged
+> - Substance (rough notes): "Their 30-day deadline to respond to our first set of RFPs ran out last Tuesday. We still don't have the maintenance logs for the truck or the driver's hours-of-service records. Tell them we want them by end of next week or we file a motion to compel. Also they never produced the dashcam footage they mentioned on the call — I'm pretty sure they said it exists. Be firm but leave the door open to a meet-and-confer."
+> - Tone: Firm
+> - Action requested: produce outstanding documents within 7 days; offer meet-and-confer
+
+**Skill output:**
+
+```
+## Email Draft — Opposing Counsel — Dana Reyes (counsel for Acme Logistics)
+
+- **Privilege posture:** Not privileged (on the record)
+- **Matter:** 2026-042 — Smith v. Acme Logistics
+- **Archetype:** Opposing counsel
+- **Recommended send method:** Direct email; retain in matter file as meet-and-confer record
+
+---
+
+**Subject:** [Matter 2026-042 — Smith v. Acme Logistics] Outstanding Responses to Plaintiff's First Set of Requests for Production
+
+Dana,
+
+I write regarding Defendant's outstanding responses to Plaintiff's First Set of Requests for Production. Our records reflect that responses were due on [[VERIFY: confirm response deadline — notes say "last Tuesday"]], and as of today we have not received responses to RFP Nos. [[VERIFY: RFP numbers covering the three categories below]].
+
+In particular, and subject to our review of any responses since served, the following appear outstanding:
+
+1. Vehicle maintenance and inspection records for the subject tractor-trailer;
+2. The driver's hours-of-service records for the period surrounding the collision; and
+3. Dashcam or onboard-camera footage. It is our current understanding, based on Defendant's representations during our [[VERIFY: date of call]] conference, that such footage exists; please confirm its status and, if it is being withheld, the basis for doing so.
+
+We would like to resolve this without motion practice. Please produce the outstanding materials, or provide a written explanation of Defendant's position, by [[VERIFY: insert date — 7 days out]]. If it would be productive, we are available to meet and confer this week. Absent production or a workable response, Plaintiff reserves the right to seek relief from the Court, including a motion to compel under [[VERIFY: FRCP 37(a) / applicable state rule]], without waiver of any rights or defenses.
+
+Best regards,
+
+J. Ortiz
+Associate, [Firm name]
+Admitted in California
+[Phone / email]
+
+---
+
+## Reviewer Notes
+
+- **Hedges applied:** "subject to our review of any responses since served," "appear outstanding," "without waiver of any rights or defenses"
+- **Hedges applied (per Archetype-Posture rule):** Three contested-fact sentences were hedged rather than asserted bare:
+  - Response deadline → "Our records reflect that responses were due on [[VERIFY]]" (date not yet confirmed against the served set)
+  - Existence of dashcam footage → "It is our current understanding, based on Defendant's representations..." (attribution of a prior oral statement; not asserted as established fact)
+  - Outstanding categories → "the following appear outstanding" + "subject to our review of any responses since served" (guards against responses crossing in the mail)
+- **Placeholders:** Response deadline date; RFP numbers; date of the referenced call; the 7-day production date; the operative motion-to-compel rule citation. None should be sent un-resolved.
+- **Privilege concerns:** None — non-privileged, on-the-record correspondence. No privilege footer applied. Draft is written assuming it may be attached as an exhibit to a later motion to compel; tone and hedging are calibrated accordingly.
+- **Suggested attachments:** Copy of Plaintiff's First Set of RFPs; proof of service showing the response due date.
+- **Follow-up:** Calendar a reminder for the day after the production deadline to assess whether to file the motion to compel.
+```
+
+**Why this is the target quality:** the draft is firm without being argumentative, every contested fact carries a posture marker (the existence of the footage is attributed, not asserted; the deadline is hedged against a crossing response), nothing is fabricated (five `[[VERIFY]]` placeholders sit exactly where the notes were imprecise), and the Reviewer Notes let the supervising attorney see and override every posture decision in under a minute before the email goes out as a potential motion exhibit.
