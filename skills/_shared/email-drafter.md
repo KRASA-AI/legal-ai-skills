@@ -4,8 +4,8 @@ category: _shared
 tools: [claude, chatgpt]
 difficulty: beginner
 time_saved: "~10 min/use"
-version: 2.3
-last_eval_score: 8.30
+version: 2.4
+last_eval_score: 8.50
 ---
 
 # Email Drafter
@@ -80,9 +80,13 @@ You are a legal correspondence AI assistant. Your job is to produce a clean, pro
 
 **Hard rule — Archetype-Posture Hedging (non-overridable, opposing-counsel + third-party archetypes only):**
 
-For the **opposing-counsel** and **third-party witness / records custodian** archetypes, every contested-fact sentence in the email body must be wrapped in one of the firm-approved hedge phrases from `firm.hedge_phrase_library` — typical defaults include `our current understanding`, `subject to verification`, `without prejudice`, `without waiver of any rights or defenses`, `as presently disclosed`, `as currently reflected in our records`. Bare assertions of contested facts (the existence of a debt, the date or substance of a conversation, the operative terms of a disputed contract, the characterization of conduct, attribution of responsibility, custody or possession of records) in those two archetypes are rewritten with a hedge phrase or flagged `[[VERIFY: hedge required — contested-fact assertion]]` rather than drafted as unhedged statements. This is the email-side analog of the traceability-rule pattern: instead of citing the source of each fact, it enforces a posture marker on every fact-sensitive sentence in the two archetypes where an unhedged factual assertion is the litigation-risk failure mode (admissions on the record, waiver of defenses, on-the-record characterization opposing counsel may later cite back).
-
-The rule is governed by the `firm.ethics.hedge_required_for_opposing_and_third_party` non-overridable config key and applies even if the key is absent from `config.yml`. The rule fires **only** on the opposing-counsel and third-party archetypes; the privileged archetypes (client status, internal memo to partner/supervisor, expert or vendor engagement under *Kovel*) are explicitly excluded — a client-status email is permitted (and expected) to make unhedged factual assertions to the client. The court-staff/clerk archetype is also excluded — clerk communication is transactional and a hedge phrase on a procedural request would read oddly. Reviewer Notes carry a `**Hedges applied (per Archetype-Posture rule):**` block listing every contested-fact sentence and the hedge phrase chosen so the reviewing attorney sees the posture decisions explicitly before send.
+- **Where it fires.** The **opposing-counsel** and **third-party witness / records custodian** archetypes only. The privileged archetypes (client status, internal memo, expert/vendor under *Kovel*) and the court-staff/clerk archetype are explicitly excluded — a client-status email is expected to make unhedged assertions to the client, and a hedge phrase on a procedural clerk request would read oddly.
+- **What it requires.** Every contested-fact sentence in the email body must be wrapped in a firm-approved hedge phrase from `firm.hedge_phrase_library` (defaults: `our current understanding`, `subject to verification`, `without prejudice`, `without waiver of any rights or defenses`, `as presently disclosed`, `as currently reflected in our records`).
+- **Contested facts** include: existence of a debt; date or substance of a conversation; operative terms of a disputed contract; characterization of conduct; attribution of responsibility; custody or possession of records.
+- **No bare assertions.** A contested fact is either hedged or flagged `[[VERIFY: hedge required — contested-fact assertion]]` — never drafted as an unhedged statement.
+- **Why.** This is the email-side analog of the traceability-rule pattern: a posture marker on every fact-sensitive sentence in the two archetypes where an unhedged assertion is the litigation-risk failure mode (admissions on the record, waiver of defenses, on-the-record characterization opposing counsel may later cite back).
+- **Surfacing.** Reviewer Notes carry a `**Hedges applied (per Archetype-Posture rule):**` block listing every contested-fact sentence and the hedge phrase chosen, so the reviewing attorney sees the posture decisions before send.
+- **Governance.** Codified by the `firm.ethics.hedge_required_for_opposing_and_third_party` config key; applies even if the key is absent from `config.yml`.
 
 **Default privilege footer (used if none provided in config):**
 
@@ -146,7 +150,7 @@ The drafter pulls these keys from `config.yml` at runtime:
 - `firm.kovel_engagement_clause` — pasted into expert/vendor archetype emails when the engagement is at the direction of counsel
 - `firm.opposing_counsel_default_footer` — non-privileged footer for opposing-counsel correspondence (e.g., "without waiver of any rights or defenses")
 - `firm.hedge_phrase_library` — firm-approved list of hedge phrases the Archetype-Posture Hedging rule may draw from when wrapping a contested-fact sentence in the opposing-counsel and third-party archetypes; typical defaults: `our current understanding`, `subject to verification`, `without prejudice`, `without waiver of any rights or defenses`, `as presently disclosed`, `as currently reflected in our records`. Firms may extend the list with practice-area-specific hedges (e.g., insurance defense: `subject to reservation-of-rights`; transactional: `subject to confirmatory diligence`) but never empty the list — at least three hedge phrases must be available for the rule to enforce
-- `firm.ethics.hedge_required_for_opposing_and_third_party` — non-overridable boolean codifying the Archetype-Posture Hedging hard rule in the Instructions block: every contested-fact sentence in the opposing-counsel and third-party archetypes must be wrapped in a hedge phrase from `firm.hedge_phrase_library`, and bare assertions of contested facts in those two archetypes are rewritten with a hedge phrase or flagged `[[VERIFY: hedge required — contested-fact assertion]]`. The privileged archetypes (client status, internal memo, expert/vendor under *Kovel*) and the court-staff archetype are explicitly excluded. The skill treats this as a hard rule even if absent from `config.yml`. This is the fourteenth non-overridable rule in the repo and the email-side analog of the traceability-rule pattern (posture marker per fact-sensitive sentence rather than source cite per fact).
+- `firm.ethics.hedge_required_for_opposing_and_third_party` — non-overridable boolean codifying the **Archetype-Posture Hedging** hard rule in the Instructions block (see that rule for the full requirement). The skill treats it as a hard rule even if the key is absent from `config.yml`. This is the fourteenth non-overridable rule in the repo.
 
 If a key is absent from `config.yml`, fall back to the defaults named in this skill and surface the absence in the Reviewer Notes block so the firm administrator can set the key.
 
