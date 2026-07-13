@@ -4,7 +4,7 @@ category: operations
 tools: [claude, chatgpt]
 difficulty: advanced
 time_saved: "~90 min/filing"
-version: 1.1
+version: 1.2
 last_eval_score: null
 ---
 
@@ -77,9 +77,9 @@ Read the draft from the perspective of the smartest, most motivated attorney on 
 
 Flag every item that an adversary would pull. These flags become the independent reviewer's verification queue. The verification queue overlaps with, but is larger than, the drafter's `ai-citation-verifier` queue; it includes statutory text, factual assertions, and case characterizations, not just citations and quotations.
 
-### Step 3 — Four-category error sweep
+### Step 3 — Five-category error sweep
 
-Classify the flags from Step 2 into the four 2026 error categories:
+Classify the flags from Step 2 into the five 2026 error categories. Categories A–D are the authority categories — they ask whether the law the draft relies on is real and accurately described. Category E is the operative-detail category — it asks whether the numbers, dates, names, and required deliverable elements are right. A filing can be perfect on A–D and still be defective, and returned, on E.
 
 **A. Citation errors.** Case name, reporter, volume, page, year, court, pin cite. Already covered by the drafter's citation-verifier output; the reviewer spot-checks 20% of GREEN items and 100% of YELLOW and RED items against the drafter's database records.
 
@@ -88,6 +88,17 @@ Classify the flags from Step 2 into the four 2026 error categories:
 **C. Characterization errors.** The draft says the court held X; the court actually held Y. Holding versus dicta. Majority versus concurrence or dissent. Persuasive authority described as binding. Circuit split described as settled law. Procedural posture misdescribed (e.g., a reversal described as an affirmance). These are the hardest errors to catch because the citation itself is correct; only reading the opinion catches them.
 
 **D. Statutory and rule errors.** Statutory text does not match the U.S.C., state code, or regulation. Subsection citation does not exist. Effective date wrong. Rule text paraphrased where a direct quote is required. Local rule or standing order cited to a version that has been superseded.
+
+**E. Operative-detail and completeness errors.** Every atomic assertion in the draft that is not a proposition of law but that an adversary, a client, or the court will nonetheless check against a source, plus the question of whether the draft actually contains everything the filing requires. Verify each of the following against a primary source in the matter file — never against the draft's own earlier recitation of the same fact, because a wrong number propagated through a draft looks internally consistent:
+
+- **Dates and deadlines.** Filing deadline, service dates, contract effective and termination dates, limitations-period computations, notice periods, hearing dates, discovery cut-offs, and every date arithmetic step (a limitations calculation that is off by one day is a dispositive defect, not a typo).
+- **Dollar amounts and quantities.** Damages figures, contract values, caps, deductibles, penalty amounts, interest computations, fee-award calculations, page and word counts against the court's limits. Verify the arithmetic, not only the transcription — recompute every total and every derived figure independently.
+- **Party, entity, and person names.** Correct legal entity name and form; correct party alignment (plaintiff/defendant, movant/respondent, appellant/appellee); no residual names from a template or a prior matter; judge, court, and case-number accuracy in the caption.
+- **Record citations.** Every assertion about the record ("the witness testified that …", "Exhibit 14 shows …") cites a specific page, line, or exhibit that exists and says what the draft says it says.
+- **Severity, risk, and conclusion labels.** Where the draft (or an upstream skill's output feeding it, such as `contract-clause-analyzer` or `nda-triage`) assigns a severity rating, a risk tier, or a bottom-line conclusion, confirm that the label matches the analysis underneath it. An inverted or drifted rating — a HIGH-risk clause described in the body and labeled MEDIUM in the summary table — is a Category E defect.
+- **Deliverable completeness.** Read the instruction, the court's rules, and the local rules as a checklist, and confirm the draft contains every required element: every requested section, every required certificate (service, compliance, word-count, corporate disclosure), every exhibit referenced in the text, every signature block, correct formatting and caption form, and every relief item the client asked for. A deliverable that omits a required element fails regardless of how good the argument is.
+
+*Why this category exists.* Independent 2026 benchmarking of AI agents on realistic legal deliverables (the Legal Agent Benchmark and its independent re-implementations) grades each deliverable against atomic pass/fail criteria and reports two numbers: the share of individual criteria satisfied, and the share of deliverables in which *every* criterion passes. The gap between them is stark — leading systems satisfy well over 90% of individual criteria while producing a fully-correct deliverable in well under 20% of tasks. The lesson for the reviewer is structural: a legal deliverable is an all-pass artifact. It is defective if any single atom is wrong, and the atoms that get missed are disproportionately the unglamorous ones — a date, a total, a party name, a missing certificate — precisely because the reviewer's attention is on the law. Category E exists to make those atoms an explicit, exhaustive sweep rather than a background assumption. For the same reason, Category E is **never** spot-checked: verify 100% of dates, 100% of amounts, 100% of names in the caption and signature blocks, and 100% of the required-element checklist.
 
 For each flagged item, assign the error category, cite the specific passage in the draft, and cite the specific primary source the reviewer pulled (or the specific database record from the drafter's verification).
 
@@ -119,6 +130,7 @@ Produce one of two outputs, never both.
 
 - Chain-of-custody is clean.
 - No citation, quotation, characterization, or statutory error remains.
+- No operative-detail error remains, and every required deliverable element is present (Category E is fully swept, not sampled).
 - Adverse authority has been disclosed where required.
 - AI disclosure posture is correct.
 - The signing attorney's certification checklist is ready.
@@ -127,7 +139,7 @@ Output includes: reviewer name, reviewer relationship to matter ("no drafting or
 
 **Defect List** — issued whenever *any* Step 1–5 item fails. Output includes:
 
-- Defects grouped by category (chain-of-custody, citations, quotations, characterizations, statutory/rule, adverse authority, AI disclosure).
+- Defects grouped by category (chain-of-custody, citations, quotations, characterizations, statutory/rule, operative-detail/completeness, adverse authority, AI disclosure).
 - For each defect: exact location in the draft, specific issue, specific remediation (replace with verified cite, delete the passage, rewrite the characterization, add the disclosure certification, etc.).
 - A re-review requirement: once defects are fixed, the drafting team resubmits and the same reviewer (not a new one) closes the loop.
 
@@ -177,9 +189,9 @@ Use this structure. Do not reproduce proprietary text from the source draft beyo
 
 | # | Location | Flag type | Passage | Reviewer action |
 |---|----------|-----------|---------|-----------------|
-| 1 | [page:line] | Citation / Quotation / Characterization / Statutory / Adverse-auth / Disclosure | [brief excerpt] | [verified / defect — defect ID] |
+| 1 | [page:line] | Citation / Quotation / Characterization / Statutory / Operative-detail / Adverse-auth / Disclosure | [brief excerpt] | [verified / defect — defect ID] |
 
-## Four-Category Error Sweep
+## Five-Category Error Sweep
 
 ### A. Citations (20% GREEN spot-check + 100% YELLOW/RED)
 - Spot-checked: [count]
@@ -196,6 +208,19 @@ Use this structure. Do not reproduce proprietary text from the source draft beyo
 ### D. Statutory and rule text (verbatim vs code and rule text)
 - Checked: [count]
 - Defects: [count]
+
+### E. Operative details and deliverable completeness (100% — never sampled)
+
+| Atom | Items in draft | Verified against primary source | Defects |
+|------|----------------|---------------------------------|---------|
+| Dates and deadlines (incl. limitations arithmetic) | | | |
+| Dollar amounts and quantities (incl. recomputed totals) | | | |
+| Party, entity, and person names; caption and case number | | | |
+| Record citations (page / line / exhibit) | | | |
+| Severity, risk, and conclusion labels vs. the analysis beneath them | | | |
+| Required-element checklist (sections, certificates, exhibits, signature blocks, formatting, relief requested) | | | |
+
+- Required elements missing: [list or "none"]
 
 ## Adverse-Authority Check
 
@@ -221,7 +246,7 @@ Use this structure. Do not reproduce proprietary text from the source draft beyo
 - **Primary source (what the authority actually says / what the code actually says):** [citation + quoted text]
 - **Remediation:** [replace with verified cite / delete passage / rewrite characterization / add disclosure certification]
 
-[Repeat for every defect. Order: chain-of-custody first, then statutory, quotations, characterizations, citations, adverse authority, disclosure.]
+[Repeat for every defect. Order: chain-of-custody first, then statutory, quotations, characterizations, citations, operative-detail/completeness, adverse authority, disclosure.]
 
 ### Re-review requirement
 
@@ -232,7 +257,7 @@ Use this structure. Do not reproduce proprietary text from the source draft beyo
 
 ## Release-to-File Attestation (if verdict is RELEASE-TO-FILE)
 
-> I, [reviewer name], have conducted an independent review of the above filing. I did not draft, edit, or direct the drafting of this filing. I audited the chain-of-custody log, spot-checked citations, verified every quotation verbatim, verified statutory and rule text against the code, reviewed for mischaracterization of authority, reviewed for undisclosed controlling adverse authority, and confirmed the AI-disclosure posture against the court's standing order and the firm's governance policy. I found no defects requiring return to the drafting team. This filing is released to the signing attorney for Rule 11 / RPC 3.3 certification and filing.
+> I, [reviewer name], have conducted an independent review of the above filing. I did not draft, edit, or direct the drafting of this filing. I audited the chain-of-custody log, spot-checked citations, verified every quotation verbatim, verified statutory and rule text against the code, reviewed for mischaracterization of authority, verified every date, amount, name, and record citation against a primary source and confirmed that every required element of the filing is present, reviewed for undisclosed controlling adverse authority, and confirmed the AI-disclosure posture against the court's standing order and the firm's governance policy. I found no defects requiring return to the drafting team. This filing is released to the signing attorney for Rule 11 / RPC 3.3 certification and filing.
 >
 > Signed: ______________________    Date / Time: ______________
 >       [Reviewer]
@@ -246,7 +271,8 @@ Use this structure. Do not reproduce proprietary text from the source draft beyo
 
 - Never issue a Release-to-File attestation with open defects. The defect list exists or the attestation exists; there is no middle output.
 - Never let the drafter, a co-drafter, or the signing attorney function as the independent reviewer. The independent reviewer is institutionally independent of the drafting record.
-- Never substitute a spot-check of the drafter's citation verifier output for running the four-category error sweep. The S&C pattern is that the citation verifier *was* run on the drafting team's side and the filing still shipped with 40+ errors because the reviewer-side sweep did not happen.
+- Never substitute a spot-check of the drafter's citation verifier output for running the five-category error sweep. The S&C pattern is that the citation verifier *was* run on the drafting team's side and the filing still shipped with 40+ errors because the reviewer-side sweep did not happen.
+- Never sample Category E. Dates, amounts, names, record citations, severity labels, and required deliverable elements are verified at 100%. A legal filing is an all-pass artifact: one wrong date or one missing certificate defeats it regardless of how sound the argument is, and independent 2026 benchmarking of AI legal deliverables shows that systems which get more than nine in ten atomic items right still fail to produce a fully-correct deliverable in the large majority of tasks. A sampled review is structurally the wrong instrument for that failure distribution.
 - Never treat chain-of-custody gaps as minor. Custody gaps are the leading indicator of downstream error; they warrant an immediate return to the drafting team.
 - Never release an appellate brief, emergency motion, or sanctions response for filing without this independent-review pass, even if the deadline is tight. The 5th Circuit *Fletcher v. Experian* sanction and the 6th Circuit *Whiting v. City of Athens* $30,000 aggregate sanction both involved filings where the signing attorney believed their own review was sufficient and the circuit court disagreed.
 - Save the review output to `outputs/pre-filing-review/[matter-id]-[filing-slug]-[YYYY-MM-DD].md`.
