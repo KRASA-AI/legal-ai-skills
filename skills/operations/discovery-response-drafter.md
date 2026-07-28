@@ -5,7 +5,7 @@ tools: [claude, chatgpt]
 difficulty: intermediate
 time_saved: "~60 min per discovery set"
 version: 1.2
-last_eval_score: 9.20
+last_eval_score: 8.60
 ---
 
 # Discovery Response Drafter

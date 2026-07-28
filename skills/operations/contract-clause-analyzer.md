@@ -4,8 +4,8 @@ category: operations
 tools: [claude, chatgpt]
 difficulty: intermediate
 time_saved: "~30 min/contract"
-version: 2.3
-last_eval_score: 9.20
+version: 2.4
+last_eval_score: 8.80
 ---
 
 # Contract Clause Analyzer
@@ -202,4 +202,106 @@ If a key is absent from `config.yml`, fall back to the defaults named in this sk
 
 ## Example Output
 
-> [This section will be populated by the eval system with a reference example. For now, run the skill with a sample SaaS MSA representing the buyer to see the four-way classification, missing-provisions list, negotiation priority matrix, and Reviewer Notes block exposing every fast-path default.]
+A complete worked example for a vendor-paper SaaS MSA, representing the buyer. The input is deliberately minimal — only the contract text and the representing party are supplied (the documented minimum viable input) — so the example shows the fast-path defaults firing, every one of them surfaced in Reviewer Notes, and the Clause Language Traceability rule carrying verbatim text on every Critical and High finding.
+
+**Input:**
+
+1. Contract text: 22-page "NorthPeak Analytics Master Subscription Agreement" (vendor paper), full text provided
+2. Your party: **buyer** (subscriber)
+3.–8. *Not supplied — all fast-path.*
+
+**Output:**
+
+```
+## Contract Review Report
+
+- **Contract:** NorthPeak Analytics Master Subscription Agreement (vendor paper, v. 2025-11)
+- **Parties:** NorthPeak Analytics, Inc. ("Provider") and [[VERIFY: subscriber legal entity name — signature block blank in the provided text]]
+- **Representing:** Buyer (subscriber)
+- **Contract type:** SaaS subscription — INFERRED (confidence: HIGH — §2 "Subscription Services," §4 per-seat recurring fees, §7 hosted-environment SLA)
+- **Governing law:** Delaware — read from § 18.1 of the contract
+- **Review date:** 2026-07-13
+- **Overall risk rating:** High
+
+## Executive Summary
+
+This is standard vendor paper, and it is one-sided in the three places vendor paper usually is: the liability cap is fee-based and mutual on its face but carved out only in the Provider's favor, indemnification runs one way, and the Provider may modify the service unilaterally with no SLA credit. There is no data-processing addendum and no security-incident notification clause at all, which is a Critical gap for a hosted analytics tool ingesting customer records. Two provisions are genuinely favorable to the buyer and should be protected in redlines.
+
+## Critical & High-Risk Findings
+
+### Finding 1: Liability cap carve-outs run only in the Provider's favor
+- **Section:** § 12.2–12.3, p. 15
+- **Risk level:** Critical
+- **Current language:** "EXCEPT FOR SUBSCRIBER'S PAYMENT OBLIGATIONS AND SUBSCRIBER'S BREACH OF SECTION 9 (INTELLECTUAL PROPERTY), IN NO EVENT SHALL EITHER PARTY'S AGGREGATE LIABILITY EXCEED THE FEES PAID BY SUBSCRIBER IN THE THREE (3) MONTHS PRECEDING THE CLAIM."
+- **Issue:** The cap is drafted as mutual but every carve-out above it is a *Subscriber* obligation. The Provider's own gross negligence, willful misconduct, confidentiality breach, and data-security failure all sit **inside** a 3-month fee cap. On a $240k/yr subscription that caps Provider exposure at roughly $60k — less than the notification cost of a single moderate breach.
+- **Playbook classification:** Escalation (no playbook provided; market-standard defaults applied — a fee cap with one-way carve-outs is an escalation trigger under any standard posture)
+- **Recommendation:** Make the carve-outs symmetrical and lift the cap for the Provider's data-security failures. 3 months is also below market; 12 months is the standard floor.
+- **Suggested language:** "Except for (a) either party's indemnification obligations, (b) either party's breach of Section 10 (Confidentiality), (c) Provider's failure to maintain the security measures in Exhibit B, and (d) either party's gross negligence or willful misconduct, in no event shall either party's aggregate liability exceed the fees paid or payable in the twelve (12) months preceding the claim."
+
+### Finding 2: Indemnification is one-way
+- **Section:** § 13.1, p. 16
+- **Risk level:** High
+- **Current language:** "Subscriber shall indemnify, defend and hold harmless Provider from any claim arising out of Subscriber Data or Subscriber's use of the Services."
+- **Issue:** No corresponding Provider IP indemnity. If a third party asserts that NorthPeak's platform infringes a patent, the buyer defends itself and pays. A Provider IP indemnity is market-standard in SaaS and its absence is a material deviation, not a drafting oversight.
+- **Playbook classification:** Outside range
+- **Recommendation:** Add a reciprocal Provider IP indemnity with defense obligation and a remediate-or-refund fallback.
+- **Suggested language:** "Provider shall defend Subscriber against any third-party claim that the Services infringe such third party's patent, copyright, or trade secret, and shall indemnify Subscriber for damages finally awarded or amounts paid in settlement of such claim."
+
+### Finding 3: Unilateral service-modification right with no SLA credit
+- **Section:** § 6.4, p. 9
+- **Risk level:** High
+- **Current language:** "Provider reserves the right to modify, suspend, or discontinue any feature of the Services at any time in its sole discretion, without liability to Subscriber."
+- **Issue:** Read with § 7 (SLA), the Provider may remove the feature the buyer subscribed for and owe nothing. "Without liability" also purports to defeat the SLA credit in § 7.3, creating an internal conflict the Provider would resolve in its favor.
+- **Playbook classification:** Outside range
+- **Recommendation:** Limit to non-material modifications; require 90 days' notice and a termination-with-refund right for any material degradation.
+
+## Medium & Low-Risk Findings
+
+### Auto-renewal with a 90-day non-renewal notice window
+- **Section:** § 3.2, p. 5 — **Risk level:** Medium — **Playbook classification:** Within range
+- 90 days is long but not off-market. Recommendation: shorten to 30–60 days, or calendar the notice date at signature. Low negotiation effort.
+
+### Notice provision requires physical mail
+- **Section:** § 19.3, p. 21 — **Risk level:** Low — **Playbook classification:** Within standard
+- Add email notice with confirmation. Cosmetic, but avoids a defective-notice fight later.
+
+## Missing Provisions
+
+- **Data Processing Addendum / data-handling terms.** Searched §§ 1 (Definitions), 9 (Intellectual Property), 10 (Confidentiality), 16 (Miscellaneous), and all exhibits listed in the table of contents (A: Fees; B: Support Tiers). No DPA, no sub-processor list, no cross-border transfer terms, no Exhibit B security measures (Exhibit B is Support Tiers, not security). **Consequence:** for a hosted analytics tool ingesting customer records, the buyer has no contractual control over how its data is processed or where it goes, and no basis for GDPR/CCPA processor obligations.
+- **Security-incident notification.** Searched §§ 10 (Confidentiality), 12 (Limitation of Liability), 14 (Term and Termination), 16 (Miscellaneous). No breach-notification obligation, no notification clock. **Consequence:** the buyer may learn of a Provider breach only after its own statutory clock has begun running.
+- **Data return / deletion on termination.** Searched §§ 14 (Term and Termination), 15 (Effect of Termination). § 15 addresses fee settlement only. **Consequence:** no contractual right to get the data out; export becomes a leverage point at renewal.
+
+## Favorable Provisions
+
+- **§ 5.2 — Fee protection.** Price increases capped at 5% per renewal term. Better than market; protect this in redlines.
+- **§ 11.1 — Subscriber owns Subscriber Data**, with no license-back beyond what is needed to provide the Services. Clean and correctly scoped.
+
+## Negotiation Priority Matrix
+
+| Priority | Clause | Risk | Effort to Negotiate | Recommendation |
+|----------|--------|------|---------------------|----------------|
+| 1 | § 12.2–12.3 liability cap carve-outs | Critical | High | Symmetrical carve-outs; lift cap for Provider security failures; 3 mo → 12 mo |
+| 2 | Missing DPA + security-incident notification | Critical | Medium | Attach firm-standard DPA; 72-hour notification clock |
+| 3 | § 13.1 one-way indemnity | High | Medium | Add reciprocal Provider IP indemnity |
+| 4 | § 6.4 unilateral modification | High | Medium | Limit to non-material; 90-day notice; termination-with-refund on material degradation |
+| 5 | Missing data return/deletion on termination | High | Low | Standard 30-day export window + certified deletion |
+| 6 | § 3.2 auto-renewal notice window | Medium | Low | 90 → 60 days, or calendar at signature |
+
+## Reviewer Notes (always present — fast-path transparency)
+
+- **Contract type:** INFERRED from contract structure — SaaS subscription (confidence: HIGH)
+- **Governing law:** read from § 18.1 (Delaware) — not supplied by user
+- **Counterparty sophistication assumption:** DEFAULTED to "unknown — firm-protective." NorthPeak is on its own paper with a drafted liability schedule, which suggests a sophisticated counterparty; if the firm confirms that, re-run — the "within range" tolerances tighten and § 3.2 likely moves from Within range to Outside range.
+- **Playbook used:** none — `firm.playbooks.saas` not set in `config.yml`. **Inline market-standard defaults were applied and every classification above is against those defaults, not against a firm position.** Set `firm.playbooks.saas` to make these classifications authoritative.
+- **Risk posture applied:** DEFAULTED to Moderate — `firm.risk_posture` not set.
+- **Defaulted inputs:** contract type (inferred), jurisdiction (read from contract), key concerns (full standard sweep), context (defaulted to "moderate leverage, single transaction"), playbook (market-standard fallback), counterparty sophistication (unknown — firm-protective).
+- **Suggested-language source:** market-standard, **not** the firm clause library — `firm.standard_clauses.*` not set.
+- **Override invitation:** "If any default is wrong for this matter, re-run with explicit input."
+
+## Disclaimers
+- This review is AI-assisted and should be reviewed by a licensed attorney
+- Contract analysis depends on complete and accurate document text
+- Jurisdictional nuances may affect enforceability of specific provisions
+```
+
+Note what the traceability rule forces here. Finding 1 does not say "the liability cap is one-sided" — it reproduces the cap **verbatim**, so the reviewing attorney can see for herself that every carve-out names *Subscriber*. And the missing-provision findings name the exact sections searched, including the trap that Exhibit B *sounds* like a security exhibit but is Support Tiers — which is precisely the kind of contract-structure quirk that produces a false "missing provision" call when the search isn't shown.

@@ -4,8 +4,8 @@ category: _shared
 tools: [claude, chatgpt]
 difficulty: beginner
 time_saved: "~15 min/response"
-version: 2.4
-last_eval_score: 8.40
+version: 2.5
+last_eval_score: 8.50
 ---
 
 # Review Responder
@@ -108,9 +108,11 @@ You are a legal reputation-management AI assistant. Your job is to draft a respo
 - **Scenario:** [from template library]
 - **Ethics flag:** NONE / YELLOW (review before post) / RED (do not post — escalate)
 - **Character/length target:** [platform-appropriate]
+- **Authorized poster:** [role(s) from `firm.review_response_authorization` — who may actually post this; "unset — any posting requires attorney clearance" if the key is absent]
+- **Signature posture:** [`firm.review_signature_posture` — firm_name (default) / role_title / named_attorney]
 
 ## Drafted Response
-[The response, ready for firm-authorized poster.]
+[The response, ready for firm-authorized poster. Signed per the signature posture above; tone per `firm.voice` where set.]
 
 ## Ethics Compliance Notes
 - **Confidentiality check:** [how the draft avoids confirming/denying representation]
@@ -120,9 +122,10 @@ You are a legal reputation-management AI assistant. Your job is to draft a respo
   - **Controlling opinion:** [the most-restrictive cited opinion when multiple jurisdictions govern; identifies which constraint the draft was tuned to]
 - **Retaliation / tone check:** PASS / needs softening
 - **Advertising rule check (MR 7.1 or state):** PASS / issue flagged
+- **Firm config applied:** [each config key that shaped this draft → the value used; each key that was absent → named explicitly so the firm administrator can set it. Never silently default.]
 
 ## Suggested Offline Follow-Up
-[If applicable: who from the firm should reach the reviewer privately, and what to offer.]
+[If applicable: who from the firm should reach the reviewer privately (named from `firm.escalation_routing.*` / `firm.review_response_authorization` where set), and what to offer.]
 
 ## Escalation (if RED)
 - **Trigger:** [malpractice allegation / ethics violation claim / defamation / other]
@@ -132,11 +135,13 @@ You are a legal reputation-management AI assistant. Your job is to draft a respo
 ## Platform Takedown Path (if spam/fake)
 - **Evidence:** [why this appears fake or prohibited]
 - **Platform policy cited:** [e.g., "Google's Fake Engagement policy"]
+- **Firm's platform contact:** [from `firm.takedown_contacts.{platform}` — named support contact / escalation path / relationship manager; "unset" if the key is absent]
 - **Request template:** [brief note to platform support]
 
 ## Disclaimers
 - AI-assisted draft. An authorized member of the firm must approve before posting.
 - Response follows the general rule against confirming or denying representation; jurisdiction-specific opinions may impose additional constraints.
+- [`firm.disclaimers.review_response` verbatim, if the firm has configured a standardized review-response disclaimer.]
 ```
 
 **Output requirements:**
@@ -187,6 +192,7 @@ A complete worked example for a negative review on Google Business Profile from 
 - Response tone target: De-escalating
 - Jurisdiction / bar: California
 - Matter facts to avoid: any reference to a custody matter, retainer, or court outcome
+- Firm `config.yml` (excerpt): `firm.name: Smith & Lee LLP`; `firm.voice: [warm, professional, non-defensive]`; `firm.review_signature_posture: role_title`; `firm.review_response_authorization: [marketing_lead, general_counsel]`; `firm.escalation_routing.general_counsel: R. Okafor`; `firm.disclaimers.review_response` **absent**; `firm.takedown_contacts.google` **absent**
 
 **Output:**
 
@@ -198,16 +204,18 @@ A complete worked example for a negative review on Google Business Profile from 
 - **Scenario:** Negative review, unknown reviewer
 - **Ethics flag:** YELLOW (review before post — confirm reviewer is not a current client mid-matter)
 - **Character/length target:** 3–4 sentences (Google norm)
+- **Authorized poster:** marketing_lead or general_counsel (`firm.review_response_authorization`) — marketing_lead may post only if the YELLOW flag clears
+- **Signature posture:** role_title (`firm.review_signature_posture`) — so the response signs as a role, not as the firm alone and not as a named attorney
 
 ## Drafted Response
 Thank you for taking the time to share your concerns. We take all feedback
 seriously and hold ourselves to a high standard of communication and service.
 Because of our professional obligations, we can't discuss any specific
-situation in a public forum, but we'd genuinely welcome the chance to listen
-and help — please reach our office directly at (555) 123-4567 and ask for our
+situation in a public forum, but we'd welcome the chance to listen and help —
+please reach our office directly at (555) 123-4567 and ask for our
 client-relations coordinator.
 
-— Smith & Lee LLP
+— Client Relations, Smith & Lee LLP
 
 ## Ethics Compliance Notes
 - **Confidentiality check:** The draft neither confirms nor denies that the
@@ -225,19 +233,35 @@ client-relations coordinator.
   motives, or mental state; no implication they misunderstood
 - **Advertising rule check (MR 7.1 / Cal. RPC 7.1):** PASS — no factual claims
   about outcomes or comparisons
+- **Firm config applied:**
+  - `firm.name` → "Smith & Lee LLP" (signature)
+  - `firm.voice` → warm, professional, non-defensive (drove "we'd welcome the
+    chance to listen," not the colder "we dispute this characterization")
+  - `firm.review_signature_posture` → `role_title` → signed "Client Relations,
+    Smith & Lee LLP" rather than the firm-name default; no attorney named
+  - `firm.review_response_authorization` → marketing_lead, general_counsel
+  - `firm.escalation_routing.general_counsel` → R. Okafor (used below)
+  - `firm.disclaimers.review_response` → **ABSENT** — firm has no standardized
+    review-response disclaimer; only the two default disclaimers are appended.
+    Set this key if the firm wants a "responses do not constitute a
+    representation that any individual was a client" line.
+  - `firm.takedown_contacts.google` → **ABSENT** — not needed here (review is
+    not spam/fake), but set it before a takedown is ever required.
 
 ## Suggested Offline Follow-Up
 If internal records identify this reviewer as a current client in an open
-matter, the responsible attorney (not marketing) should make direct contact
-before anything is posted, and the public response should be held. If the
-reviewer is a former client or non-client, the client-relations coordinator
+matter, the responsible attorney (not marketing_lead) should make direct
+contact before anything is posted, and the public response should be held. If
+the reviewer is a former client or non-client, the client-relations coordinator
 may invite a private call as drafted.
 
 ## Escalation (if RED)
 - **Trigger:** None met. NOTE: the review borders on a malpractice narrative
   ("did NOTHING," "lost in court"). If the firm reads it as alleging
   malpractice, treat as RED and route to General Counsel before posting.
-- **Route to:** General Counsel (only if the malpractice reading is adopted)
+- **Route to:** General Counsel — R. Okafor
+  (`firm.escalation_routing.general_counsel`); only if the malpractice reading
+  is adopted
 
 ## Disclaimers
 - AI-assisted draft. An authorized member of the firm must approve before posting.
@@ -246,3 +270,5 @@ may invite a private call as drafted.
 ```
 
 Note the two ethics moves a non-specialist would likely get wrong: (1) the draft does **not** rebut "lost in court" or "never returned my calls" even though doing so is tempting — rebutting would confirm representation and disclose matter facts; (2) the opinion text is flagged `[[VERIFY]]` rather than fabricated, because the skill did not have the verbatim opinion language at runtime.
+
+Note also what the config did to the draft: the signature is a **role title**, not the firm name and not an attorney, because `firm.review_signature_posture` is set to `role_title`; the two absent keys are **named as absent** rather than silently defaulted, so the firm administrator learns what to set; and the escalation route carries the actual GC's name from config rather than the generic "General Counsel."

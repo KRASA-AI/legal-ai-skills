@@ -5,7 +5,7 @@ tools: [claude, chatgpt]
 difficulty: advanced
 time_saved: "~4 hr/transcript"
 version: 1.1
-last_eval_score: 9.20
+last_eval_score: 8.60
 ---
 
 # Deposition Transcript Analyzer

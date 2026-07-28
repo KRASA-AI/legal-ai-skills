@@ -5,7 +5,7 @@ tools: [claude, chatgpt]
 difficulty: intermediate
 time_saved: "~45 min/review"
 version: 2.1
-last_eval_score: 9.20
+last_eval_score: 8.60
 ---
 
 # Regulatory Compliance Checker

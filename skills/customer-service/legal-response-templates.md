@@ -4,8 +4,8 @@ category: customer-service
 tools: [claude, chatgpt]
 difficulty: intermediate
 time_saved: "~25 min/response"
-version: 2.1
-last_eval_score: 9.20
+version: 2.2
+last_eval_score: 8.80
 ---
 
 # Legal Response Templates
@@ -228,4 +228,139 @@ If a key is absent from `config.yml`, fall back to the defaults named in this sk
 
 ## Example Output
 
-> [This section will be populated by the eval system with a reference example. For now, run the skill with a sample DSAR-access inquiry under California CCPA + EU GDPR to see the statutory-window math, sub-category disambiguation, and template-of-templates output.]
+A complete worked example for a multi-jurisdiction DSAR that straddles two sub-categories. The input is deliberately imperfect — the requester asks for two different things in one email, the residency that determines which statute governs is unstated, and the firm has no stored template for this sub-category — so the example shows the three moves that matter: sub-category disambiguation, shorter-deadline-controls math with provision text, and a generated first-draft template.
+
+**Input:**
+
+- Inquiry (email, received 2026-03-03 09:14 PT): *"Hi — I want a copy of everything you have on me, and I also want you to delete my account and all my data. I've been a customer since 2023. I'm attaching my ID. — Priya N."*
+- Category / sub-category: DSAR — requester proposed no sub-category
+- Requester details: Priya N., consumer, individual account holder, not represented by counsel. **Residency not stated in the inquiry.**
+- Matter context: no matter ID — new intake (ticket PRIV-2291)
+- Jurisdictions: firm operates in California and the EU; controlling statute depends on residency
+- Template source: no template — generate first-draft template alongside the response
+- Sender: privacy officer
+- Receipt timestamp: 2026-03-03 09:14 PT
+
+**Output:**
+
+```
+## Response Package — DSAR — access + deletion (dual sub-category) — Priya N.
+
+- **Category / Sub-category:** DSAR — access (§1798.130 / Art. 15) AND DSAR — deletion (§1798.105 / Art. 17). Two sub-categories in one inquiry; they carry different verification and exception postures and are answered as two tracks in one response, not merged.
+- **Receipt timestamp:** 2026-03-03 09:14 PT
+- **Statutory window:** Controlling = EU GDPR Art. 12(3): one month from receipt = 2026-04-03. CCPA §1798.130(a)(2) would allow 45 days = 2026-04-17. The shorter deadline controls while residency is unconfirmed: 2026-04-03.
+- **Applicable jurisdictions:** California (CCPA/CPRA) and/or EU (GDPR) — `[[VERIFY: requester residency — determines controlling statute]]`
+- **Escalation flag:** NONE. Checklist run in full: deadline is 31 days out (not within 7); no minors', health, genetic, criminal-conviction, or immigration data indicated; requester is a consumer, not a government entity or regulator; no litigation, counsel, prior denial, regulator complaint, or media reference; no breach implicated; not a former employee. Routing is direct to requester (Rule 4.2 not implicated — unrepresented).
+- **Routing:** direct to requester
+
+## Drafted Response
+
+Subject: Your privacy request — acknowledgment (Ref: PRIV-2291)
+
+Dear Priya,
+
+Thank you for your request, which we received on March 3, 2026. We are treating
+it as two separate privacy requests: (1) a request for access to the personal
+information we hold about you, and (2) a request to delete your personal
+information and close your account.
+
+We will respond substantively no later than **April 3, 2026**. If your request
+proves complex, we may extend that period and will tell you why before the
+deadline passes.
+
+Two things will help us proceed:
+
+1. **Your state or country of residence.** The rights that apply to your request
+   — and the deadlines we owe you — depend on where you reside, so please confirm.
+2. **Identity verification.** We have received your ID attachment and will verify
+   it against our records. `[[VERIFY: confirm the ID attachment is legible and
+   matches the account of record before verification is deemed complete]]`
+
+One caution about sequencing: if we delete your data first, we may be unable to
+produce the access copy afterward. Unless you tell us otherwise, we will **fulfil
+the access request first and the deletion request second**, so you receive your
+copy before the data is removed. Reply if you would prefer we proceed differently.
+
+Please also note that some records may be retained where an exception applies
+(for example, records we are legally required to keep). If any exception applies
+to your data, we will identify it in our substantive response.
+
+Sincerely,
+`[[VERIFY: sender name]]`, Privacy Officer
+`[[firm.sender_signatures.privacy_officer]]`
+
+This response is without prejudice to any rights or defenses.
+
+## Statutory-Window Math
+
+- Receipt: 2026-03-03 (09:14 PT)
+- Provision: **EU GDPR Art. 12(3)**
+- **Provision text:** "The controller shall provide information on action taken on a request under Articles 15 to 22 to the data subject without undue delay and in any event within one month of receipt of the request. That period may be extended by two further months where necessary, taking into account the complexity and number of the requests."
+  - Standard deadline: **2026-04-03**
+  - Extension trigger: complexity/number of requests → up to +2 months (to 2026-06-03), and the data subject must be informed of the extension **within one month of receipt** (i.e., by 2026-04-03) with reasons.
+- Provision: **CCPA/CPRA §1798.130(a)(2)** (access) and **§1798.105** (deletion)
+- **Provision text:** `[[VERIFY: provision text — paste §1798.130(a)(2) and §1798.105 verbatim]]` — the operative text was not available to the skill at runtime. Per the Provision Text Traceability hard rule, the 45-day figure below is therefore an **[[VERIFY]] posture, not an asserted one**, and must be confirmed against the statute before it is relied on.
+  - Standard deadline (unasserted, pending text): 45 days from receipt = 2026-04-17; extendable once by 45 days (to 2026-06-01) with notice.
+  - Acknowledgment: 10 business days from receipt = **2026-03-17** to confirm receipt.
+- **Controlling provision:** GDPR Art. 12(3). Rationale: residency is unconfirmed, both regimes are plausibly in scope, and the rule computes against the **shorter** cited deadline. 2026-04-03 controls until residency is verified. If Priya confirms California-only residency, the deadline relaxes to 2026-04-17 — but the calendar entry is **not** moved out without that confirmation.
+- Calendar action: `[[CALENDAR IMMEDIATELY: substantive response by 2026-04-03]]`, `[[CALENDAR: CCPA receipt acknowledgment by 2026-03-17 — fires regardless of which statute ultimately controls]]`
+
+## Reviewer Notes
+
+- **Template used:** none existed for DSAR — dual access+deletion. First-draft template generated below.
+- **Variable assumptions:**
+  - requester → "Priya N." — from the signature line of the inquiry
+  - customer since → 2023 — asserted by requester; not confirmed against the account record → `[[VERIFY: account tenure]]`
+  - residency → `[[VERIFY: requester residency]]` — not stated anywhere in the inquiry; drives which statute controls. **Not guessed.**
+  - sender name → `[[VERIFY: sender name]]` — role given (privacy officer), individual not named
+  - matter ID → none; ticket PRIV-2291 used per `firm.matter_number_format` fallback
+- **Jurisdictional adjustments:** deadline computed against the shorter of the two cited windows because residency is unknown; the acknowledgment obligation (CCPA, 10 business days) is calendared even though GDPR does not require it — an acknowledgment is harmless under GDPR and mandatory under CCPA, so the union of obligations is honored while residency is open.
+- **Sub-category boundary call:** the inquiry straddles access and deletion. It is **not** collapsed into "DSAR — deletion" (the intuitive read, since deletion is the larger ask) because doing so would drop the access right entirely and would sequence the two in the order that destroys the access copy. Both tracks are carried, and the response proposes access-then-deletion sequencing with an opt-out.
+- **Escalation reasoning:** no trigger fired — see the flag above for the checklist as run.
+
+## First-Draft Template (no firm template existed for this sub-category)
+
+Save to `templates/dsar/access-plus-deletion.md`. Variables in `{{ }}`; the
+statutory-window paragraph is parameterized by jurisdiction; escalation triggers
+are inlined so the next user does not re-derive them.
+
+    Subject: Your privacy request — acknowledgment (Ref: {{ticket_id}})
+
+    Dear {{requester_first_name}},
+
+    Thank you for your request, which we received on {{receipt_date}}. We are
+    treating it as two separate privacy requests: (1) access, and (2) deletion.
+
+    We will respond substantively no later than {{controlling_deadline}}.
+    [{{controlling_provision}} — one month (GDPR Art. 12(3)) or 45 days
+    (CCPA §1798.130(a)(2)) from receipt; USE THE SHORTER WINDOW UNTIL RESIDENCY
+    IS CONFIRMED.] If the request proves complex we may extend and will tell you
+    why before the deadline passes.
+
+    To proceed we need: (1) {{residency_confirmation_ask}}, (2) identity
+    verification per {{verification_standard}}.
+
+    Sequencing: access is fulfilled BEFORE deletion unless the requester objects,
+    because deletion may make the access copy unrecoverable.
+
+    Exceptions: {{retention_exception_language}}
+
+    {{sender_signature}}
+    {{firm.disclaimers.standard_response}}
+
+    ---
+    ESCALATE INSTEAD OF SENDING THIS TEMPLATE IF: deadline is within 7 days of
+    receipt · minors', health, genetic, criminal-conviction, or immigration data
+    is implicated · requester is represented by counsel (Rule 4.2 — route to
+    counsel) · request references litigation, a regulator complaint, a prior
+    denial, or media · the data sought is backup-only or archival and cannot
+    technically be produced · requester is a former employee or another party
+    whose access could itself be a privacy event.
+
+## Disclaimers
+
+- AI-assisted draft. An attorney must review before sending.
+- Templates reflect default positions; jurisdiction- or matter-specific obligations may require adjustment.
+```
+
+Three things a non-specialist would likely get wrong here, and which the skill gets right: (1) the two sub-categories are **not merged** — merging them would silently drop the access right and would sequence deletion first, destroying the copy the requester asked for; (2) the deadline is computed against the **shorter** of the two candidate windows while residency is unknown, rather than optimistically assuming the 45-day CCPA clock; (3) the CCPA provision text was not available at runtime, so the 45-day figure is flagged `[[VERIFY]]` rather than asserted — which is exactly why the shorter GDPR window (whose text *is* available) is the one calendared.

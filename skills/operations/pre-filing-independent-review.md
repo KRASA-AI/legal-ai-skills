@@ -5,7 +5,7 @@ tools: [claude, chatgpt]
 difficulty: advanced
 time_saved: "~90 min/filing"
 version: 1.2
-last_eval_score: null
+last_eval_score: 9.10
 ---
 
 # Pre-Filing Independent Review

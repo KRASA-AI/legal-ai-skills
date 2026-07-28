@@ -4,8 +4,8 @@ category: operations
 tools: [claude, chatgpt]
 difficulty: intermediate
 time_saved: "~30 min/letter"
-version: 2.2
-last_eval_score: 9.20
+version: 2.3
+last_eval_score: 8.80
 ---
 
 # Demand Letter Drafter
@@ -198,4 +198,149 @@ If a key is absent from `config.yml`, fall back to the defaults named in this sk
 
 ## Example Output
 
-> [This section will be populated by the eval system with a reference example. For now, run the skill with sample input and a named matter-type variant to see output quality.]
+The worked example below is run on **minimum-defensible input** for a breach-of-contract demand: the user supplies the contract, the breach facts, and two of three damages figures with source documents — the third figure (lost margin on downstream sales) is asserted by the client but backed by no document in the matter file. That gap is deliberate: it is exactly the situation the **damages traceability rule (Hard Rule 7)** exists to catch, and the example shows the rule firing — the unsupported figure becomes a `[[VERIFY]]` placeholder rather than a number the skill invents, and it is therefore excluded from the demanded total rather than silently padding it. The cited statute carries a `[[VERIFY — ai-citation-verifier]]` tag; the SOL arithmetic is computed, not estimated; and the recipient is unrepresented, so no counsel-routing fires.
+
+**Input provided (verbatim from the user):**
+
+> Variant: breach of contract. Sending attorney: pull from config. Recipient: Marcus Trdenton, President, Trenton Fabrication LLC, 4400 Industrial Pkwy, Akron OH 44305 — not represented that we know of. Facts: Our client Halden Components Inc. signed a written supply agreement with Trenton Fabrication on 11/1/2023 (executed agreement in matter file, §4.2 sets unit price and §7 sets delivery schedule). Trenton stopped delivering conforming parts on 3/15/2024 and never cured. Halden covered by buying replacement parts from a second supplier at a higher price. Legal basis: breach of contract; cover damages under UCC. Damages: (1) cover price differential $86,400 — we have the replacement-supplier invoices; (2) expedited freight $12,150 — we have the freight invoices; (3) lost margin on downstream sales Halden says it lost, roughly $40,000, no documents yet. Jurisdiction: Ohio, contract governed by Ohio law. Tone: firm-but-professional. Deadline: standard.
+
+**Reviewer-facing output:**
+
+```
+GATTIS & REYE LLP
+1200 Superior Avenue, Suite 2400 · Cleveland, OH 44114
+(216) 555-0140 · gattisreye.com
+
+July 20, 2026
+
+VIA CERTIFIED MAIL — RETURN RECEIPT REQUESTED and EMAIL
+
+Marcus Trenton, President
+Trenton Fabrication LLC
+4400 Industrial Pkwy
+Akron, OH 44305
+
+Re: Breach of Supply Agreement dated November 1, 2023 — Halden Components Inc. v.
+    Trenton Fabrication LLC — Matter No. 2026-0417
+
+Dear Mr. Trenton:
+
+This firm represents Halden Components Inc. ("Halden") in connection with the written
+Supply Agreement between Halden and Trenton Fabrication LLC ("Trenton") executed
+November 1, 2023 (the "Agreement"). We write to demand cure of Trenton's material
+breach of that Agreement and payment of the resulting damages, as set forth below.
+
+Facts. Under Section 4.2 of the Agreement, Trenton agreed to supply conforming
+component parts to Halden at the stated unit price, on the delivery schedule fixed by
+Section 7. On March 15, 2024, Trenton ceased delivering conforming parts and has not
+resumed conforming performance or cured the deficiency since that date. To maintain its
+own production commitments, Halden was required to procure replacement parts from an
+alternate supplier at a higher unit price and to incur expedited freight charges it would
+not otherwise have paid.
+
+Legal basis. Trenton's cessation of conforming delivery is a breach of the Agreement.
+Where a seller fails to make delivery, the buyer may "cover" by making in good faith a
+reasonable purchase of substitute goods and recover as damages the difference between the
+cost of cover and the contract price, together with incidental damages. See Ohio Rev.
+Code § 1302.86 (UCC 2-712). [[VERIFY — ai-citation-verifier: confirm Ohio codification
+number and operative text before sending]]
+
+Damages. Halden's presently documented damages are:
+
+    Cover price differential (replacement-supplier invoices)      $ 86,400.00
+    Incidental — expedited freight (freight invoices)             $ 12,150.00
+                                                                  ------------
+    Total documented damages demanded                            $ 98,550.00
+
+Halden additionally asserts lost margin on downstream sales attributable to the breach.
+That figure is not included in the total above because it is not yet supported by a
+document in the matter file. [[VERIFY: dollar amount — lost downstream margin; provide
+supporting document (customer POs, margin schedule, or sales records) before this figure
+is stated as a demanded number.]]
+
+Demand. Halden demands payment of $98,550.00 within twenty-one (21) days of the date of
+this letter — that is, by August 10, 2026 — together with Trenton's written assurance of
+conforming future performance or, alternatively, its confirmation that the Agreement is
+terminated so that Halden's cover is final.
+
+Consequences. If Trenton does not respond by August 10, 2026, Halden is prepared to file
+suit for breach of contract in the Court of Common Pleas, Summit County, Ohio, seeking its
+cover and incidental damages, prejudgment interest, and costs as allowed by law.
+
+This letter is sent in a good-faith effort to resolve this matter without litigation and
+is without prejudice to any of Halden's rights or remedies, all of which are expressly
+reserved.
+
+Sincerely,
+
+Dana R. Gattis
+Ohio Bar No. 0071234 · Admitted in Ohio
+Gattis & Reye LLP
+1200 Superior Avenue, Suite 2400, Cleveland, OH 44114
+(216) 555-0140 · dgattis@gattisreye.com
+
+cc: Halden Components Inc. (via secure delivery — privileged)
+Enclosures: none in this draft — see Suggested Enclosures below
+```
+
+```
+## Reviewer Notes
+- **Matter-type variant:** Breach of contract (single variant; no dual-variant flag).
+- **Statutory pre-suit notice:** Not required. The Agreement contains no cure clause the
+  user identified; UCC § 2-607(3)(a) notice-of-breach applies to accepted goods but is
+  distinct from a pre-suit notice and appears already satisfied by the parties' course of
+  dealing — CONFIRM against the file before relying on it.
+- **SOL status:** Ohio's limitations period for breach of a written contract is the
+  governing clock; measured from the March 15, 2024 breach, a four-year period would run
+  March 15, 2028, and a shorter contract-specified or UCC period could apply.
+  [[VERIFY: governing Ohio limitations period and whether the Agreement shortens it — do
+  not represent the SOL date to the client until confirmed.]] This letter does not toll
+  the SOL.
+- **Anticipated defenses:**
+  - Failure of Halden's own performance / conditions precedent — Trenton may assert Halden
+    breached first (late payment, changed specs). The draft states Trenton "ceased
+    conforming delivery" without conceding any Halden default; confirm Halden's payment
+    history before sending.
+  - Commercial impracticability (UCC 2-615) — if Trenton's stoppage traces to a supply
+    disruption, expect this defense; the cover-damages theory is unaffected but the
+    consequential-damages theory (the lost-margin figure) is more exposed.
+  - Cover unreasonableness — Trenton may challenge whether Halden's replacement purchase
+    was "in good faith and without unreasonable delay"; the replacement-supplier invoices
+    should show timing and price reasonableness.
+- **Citation verification queue:** Ohio Rev. Code § 1302.86 (UCC 2-712) — route through
+  skills/operations/ai-citation-verifier.md before sending. Confirm the codification
+  number, that Ohio has adopted 2-712 without material modification, and the operative text.
+- **Damages traceability (Hard Rule 7) — fired:** Two line items carry documentary sources
+  and are in the demanded total ($98,550.00, verified as the arithmetic sum:
+  86,400 + 12,150). The third asserted item (lost downstream margin, ~$40,000) has no
+  source document and was therefore rendered as a [[VERIFY]] placeholder and EXCLUDED from
+  the total — it was not folded into the demand as a padded number. When the client
+  produces margin documentation, re-run to add it as a line item and recompute the total.
+  Note: lost downstream margin is consequential, not cover, damages — it also raises a
+  foreseeability (Hadley v. Baxendale) question independent of documentation.
+- **Suggested enclosures:** executed Supply Agreement (highlighting §4.2 and §7);
+  replacement-supplier invoices; freight invoices. Do NOT enclose the margin schedule
+  until it exists and is reviewed.
+- **Tone calibration notes:** Firm-but-professional held. No relationship-preservation
+  signal in the input; if Halden wants continued supply, soften the Consequences paragraph.
+- **Represented-counsel routing:** N — recipient not known to be represented. If Trenton
+  retains counsel, re-run; the salutation and address block switch to counsel and Rule 4.2
+  bars further direct contact.
+- **Privilege footer not used (this letter is non-privileged once sent).**
+
+## Firm Config Keys Used
+- firm.name → "Gattis & Reye LLP" (letterhead + signature)
+- firm.signature_blocks.dgattis → sending-attorney block (name, OH Bar No. 0071234, address,
+  phone, email)
+- firm.bar_admissions.dgattis → "Admitted in Ohio"
+- firm.matter_number_format → rendered "Matter No. 2026-0417" in the Re: line
+- firm.default_response_window_days → 21 (skill default; no deadline specified in input) →
+  computed to August 10, 2026
+- firm.licensure_jurisdictions → includes Ohio; no out-of-jurisdiction local-counsel flag
+- firm.tone_default → not set; skill default firm-but-professional applied
+- **Absent keys surfaced:** firm.letterhead.litigation (not set — generic firm letterhead
+  used); firm.cc_client_default (not set — defaulted to cc client via secure delivery).
+  Firm administrator should set these.
+```
+
+*Why this example and not a happy path:* the input is the input a busy paralegal actually sends — most damages are documented, one is a number the client "just knows." A skill that quietly turns "~$40,000" into a clean "$40,000.00" line and a "$138,550.00" total produces a letter that opposing counsel dismantles the day it arrives, because there is no invoice behind $40,000. The example shows the correct behavior: the unsupported figure is quarantined as a `[[VERIFY]]`, kept out of the demanded total, and its distinct legal character (consequential, not cover, damages) is flagged for the reviewing attorney. Every date is computed; the one statute is flagged for the verifier rather than asserted; the SOL is given as arithmetic with a `[[VERIFY]]` on the governing period rather than stated as settled.

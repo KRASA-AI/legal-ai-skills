@@ -4,8 +4,8 @@ category: _shared
 tools: [claude, chatgpt]
 difficulty: beginner
 time_saved: "~15 min/meeting"
-version: 2.5
-last_eval_score: 8.50
+version: 2.6
+last_eval_score: 8.70
 ---
 
 # Meeting Summarizer
@@ -102,9 +102,20 @@ The standard shell (Attendees / Summary by Topic / Decisions / Open Questions / 
 
 **Hard rule — Privilege-Posture Audit Trail (non-overridable, Mixed-privilege meetings only):**
 
-For meetings tagged `Mixed` privilege posture in the header, every topic in the `## Summary by Topic` section must carry an inline privilege tag of the form `(privilege: AC | WP | Mediation | Not privileged)` immediately following the topic label, and the Reviewer Notes block must include a `**Privilege boundaries:**` line listing the source-passage line range (transcript timestamps `MM:SS–MM:SS`, raw-note paragraph numbers `¶N–¶M`, chat-log timestamps, or other topic-block boundary indicators present in the raw input) that establishes the privilege class for each topic. Bare topics in a Mixed-privilege meeting without a privilege tag are flagged `[[VERIFY: privilege boundary — provide source range]]` rather than asserted as a privilege class. The discipline ensures that when the Mixed-privilege summary is later partially produced — for example, a meet-and-confer segment that arose within a deal-negotiation conference produced in discovery; a non-privileged settlement discussion that arose within a mediation produced in a subsequent unrelated matter; a client-update digression that surfaced facts during an internal firm strategy meeting — the producing attorney can identify the AC/WP/Mediation/Not-privileged boundaries on the source within thirty seconds and the produced segments do not carry inadvertent privileged content. The Admissions / Commitments block in Mixed-privilege meetings draws only from topics tagged `Not privileged`, and the archetype-specific trailing block draws only from topics whose privilege tag matches the trailing block's expected posture.
+For meetings tagged `Mixed` privilege posture in the header:
 
-The rule fires **only** on the `Mixed` privilege posture — single-privilege meetings (AC, WP, Mediation, Not privileged, or Internal) continue with the standard footer-level privilege treatment unchanged, the archetype-specific output-template overrides are unaffected for those meetings, and the topic-label format is unchanged for those meetings (no privilege tag is appended). This is the prep-side analog of the email-drafter v2.2 Archetype-Posture Hedging Rule applied to per-topic privilege calls: instead of a per-fact-sentence posture marker on contested-fact sentences in non-privileged email archetypes, it is a per-topic posture marker on privilege boundaries in mixed-privilege meetings — the failure mode in both cases is litigation-risk (inadvertent waiver, inadvertent admission, production of privileged content) rather than verifiability. The rule is governed by the `firm.ethics.mixed_privilege_requires_per_topic_tag` non-overridable config key and applies even if the key is absent from `config.yml`.
+- **Per-topic privilege tag** — every topic in the `## Summary by Topic` section carries an inline tag of the form `(privilege: AC | WP | Mediation | Not privileged)` immediately following the topic label.
+- **Privilege-boundaries line** — the Reviewer Notes block includes a `**Privilege boundaries:**` line that, for each topic, gives the source-passage range establishing its privilege class: transcript timestamps `MM:SS–MM:SS`, raw-note paragraph numbers `¶N–¶M`, chat-log timestamps, or other topic-block boundary indicators present in the raw input.
+- **No bare topics** — a topic in a Mixed-privilege meeting with no privilege tag is flagged `[[VERIFY: privilege boundary — provide source range]]` rather than asserted as a privilege class.
+- **Admissions scope** — the Admissions / Commitments block draws only from topics tagged `Not privileged`.
+- **Trailing-block scope** — the archetype-specific trailing block draws only from topics whose privilege tag matches that block's expected posture.
+- **Why** — when a Mixed-privilege summary is later partially produced (e.g., a meet-and-confer segment that arose within a deal-negotiation conference produced in discovery; a non-privileged settlement discussion that arose within a mediation produced in a later unrelated matter; a client-update digression that surfaced facts during an internal firm strategy meeting), the producing attorney can identify the AC/WP/Mediation/Not-privileged boundaries on the source within thirty seconds and the produced segments carry no inadvertent privileged content.
+
+Scope and governance:
+
+- **Fires only on `Mixed`** — single-privilege meetings (AC, WP, Mediation, Not privileged, or Internal) continue with the standard footer-level privilege treatment unchanged: no privilege tag is appended to topic labels, and the archetype-specific output-template overrides are unaffected.
+- **Config key** — governed by the `firm.ethics.mixed_privilege_requires_per_topic_tag` non-overridable config key; applies even if the key is absent from `config.yml`.
+- **Design analog** — this is the meeting-side analog of the email-drafter Archetype-Posture Hedging Rule: a per-topic posture marker on privilege boundaries rather than a per-fact-sentence marker on contested facts. In both cases the failure mode is litigation risk (inadvertent waiver, inadvertent admission, production of privileged content) rather than verifiability.
 
 **Output format:**
 
@@ -196,7 +207,7 @@ The summarizer pulls these keys from `config.yml` at runtime:
 - `firm.utbms.activity_codes` — firm-confirmed UTBMS A-codes
 - `firm.client_billing_guidelines.[client_id]` — overrides default block-billing rules with the client's specific OCG (e.g., minimum-increment, no-internal-conferences ban, no-staffing-ratios cap)
 - `firm.distribution_lists.[matter_id]` — preconfigured "internal only / client / opposing counsel / file only" routing
-- `firm.ethics.mixed_privilege_requires_per_topic_tag` — non-overridable boolean codifying the Privilege-Posture Audit Trail hard rule in the Instructions block: for Mixed-privilege meetings, every topic in the Summary by Topic section carries an inline `(privilege: AC | WP | Mediation | Not privileged)` tag, and the Reviewer Notes block carries a `**Privilege boundaries:**` line listing the source-passage line range establishing the boundary for each topic. Bare topics without a privilege tag in a Mixed-privilege meeting are flagged `[[VERIFY: privilege boundary — provide source range]]` rather than asserted as a privilege class. The rule fires only on the Mixed privilege posture; single-privilege meetings (AC, WP, Mediation, Not privileged, Internal) are unaffected. The skill treats this as a hard rule even if absent from `config.yml`. This is the eighteenth non-overridable rule in the repo and the meeting-side analog of the email-drafter v2.2 Archetype-Posture Hedging Rule (per-topic posture marker on privilege boundaries rather than per-fact-sentence posture marker on contested facts).
+- `firm.ethics.mixed_privilege_requires_per_topic_tag` — non-overridable boolean governing the **Privilege-Posture Audit Trail** hard rule defined in full in the Instructions block (per-topic privilege tags + a `**Privilege boundaries:**` line for Mixed-privilege meetings). Treated as a hard rule even if absent from `config.yml`. This is the eighteenth non-overridable rule in the repo.
 
 If a key is absent from `config.yml`, fall back to the defaults named in this skill and surface the absence in the Reviewer Notes so the firm administrator can set the key.
 

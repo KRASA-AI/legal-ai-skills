@@ -4,8 +4,8 @@ category: operations
 tools: [claude, chatgpt]
 difficulty: intermediate
 time_saved: "~60 min/memo"
-version: 2.2
-last_eval_score: 9.20
+version: 2.3
+last_eval_score: 8.80
 ---
 
 # Legal Research Memo
@@ -227,4 +227,170 @@ When the audience is Court-adjacent, structure CREAC sections so they drop direc
 
 ## Example Output
 
-> [This section will be populated by the eval system with a reference example. For now, run the skill with a sample question, facts, and jurisdiction to see output quality.]
+The worked example below is a **partner memo** on a California noncompete question. It is deliberately built to exercise the **holdings traceability rule (non-overridable)** under realistic runtime conditions: the governing statute's operative text is quoted **verbatim** (it is short, well-settled, and reproducible), while the leading case's controlling passage is **not** reproduced from memory — it is flagged `[[VERIFY: no supporting quotation located]]` so the signing partner locates the pin-cited passage rather than relying on an AI's paraphrase of a holding. Every citation carries the `[[VERIFY — ai-citation-verifier]]` tag; confidence labels bookend each CREAC section; and the Jurisdictional Source Checklist is completed with an explicit "no controlling authority found" where that is the honest answer.
+
+**Input provided (verbatim from the user):**
+
+> Question: Under California law, is a post-employment noncompete signed by an at-will
+> engineer enforceable if it was signed in exchange for a retention bonus (not as a
+> condition of initial hire)? Facts: client is the former employer, a CA software company;
+> engineer signed a 12-month noncompete in 2025 in exchange for a $25k retention bonus; he
+> left for a direct competitor in June 2026. We want to know if we can enforce it.
+> Jurisdiction: California. Audience: partner. Citation style: default from config.
+
+**Reviewer-facing output:**
+
+```
+PRIVILEGED AND CONFIDENTIAL — ATTORNEY WORK PRODUCT
+
+## Legal Research Memorandum
+
+**To:**    Supervising Partner
+**From:**   AI-assisted draft (Bluebook per config) — for attorney review
+**Date:**   July 20, 2026
+**Re:**    Halden Software — Enforceability of a bonus-consideration post-employment
+           noncompete against a departed at-will engineer (California)
+**Citation style:**  Bluebook (firm default from config)
+**Jurisdiction(s):** California
+**Firm licensure confirmed:** Y — California within firm.licensure_jurisdictions; no
+                              unfamiliar-jurisdiction flag
+
+---
+
+### Question Presented
+Under California law, may a former employer enforce a 12-month post-employment noncompete
+against an at-will employee who signed it in 2025 in exchange for a $25,000 retention
+bonus, where the employee resigned in June 2026 to join a direct competitor?
+
+### Brief Answer
+No — Unlikely (high confidence). California voids employee noncompetes by statute, and the
+"supported by separate consideration" framing does not create an exception. Enforcement is
+very likely barred, and an affirmative attempt to enforce carries its own statutory
+exposure. See Discussion §§ I–II.
+
+### Statement of Facts
+Client (former employer) is a California software company. In 2025 it paid a departing-risk
+engineer a $25,000 retention bonus; in exchange the engineer signed a covenant not to
+compete for 12 months post-employment. The engineer was at-will. He resigned in June 2026
+and joined a direct competitor. [Assumed pending confirmation: the agreement is governed by
+California law and contains no out-of-state choice-of-law/forum clause — CONFIRM, as it
+changes the analysis materially.]
+
+### Discussion
+
+#### I. California voids employee covenants not to compete by statute
+**Conclusion:** The noncompete is void as applied to this employee (Likely — high
+confidence).
+**Rule:** Cal. Bus. & Prof. Code § 16600(a) [[VERIFY — ai-citation-verifier]]. Operative
+text, quoted verbatim:
+> "Except as provided in this chapter, every contract by which anyone is restrained from
+> engaging in a lawful profession, trade, or business of any kind is to that extent void."
+> — Cal. Bus. & Prof. Code § 16600(a).
+The statutory exceptions are narrow and situational (sale of business goodwill, § 16601;
+dissolution/dissociation of a partnership or LLC, §§ 16602–16602.5) [[VERIFY —
+ai-citation-verifier: confirm section numbers and that none is an employment exception]].
+**Explanation:** California courts read § 16600 as a broad prohibition on employee
+noncompetes rather than a reasonableness test, and the California Supreme Court has rejected
+the narrow-restraint exception some other jurisdictions recognize. See Edwards v. Arthur
+Andersen LLP, 44 Cal. 4th 937 (2008) [[VERIFY — ai-citation-verifier: confirm reporter cite
+and year]]. [[VERIFY: no supporting quotation located — describe the holding and let the
+attorney locate and paste the controlling passage from Edwards rejecting the narrow-restraint
+exception; do not rely on this rule statement until the verbatim passage is confirmed at a
+pin cite.]] Recent legislation reinforces the prohibition: 2023 amendments added provisions
+declaring such contracts void regardless of where signed and creating employee remedies —
+commonly cited as Bus. & Prof. Code §§ 16600.1 and 16600.5 [[VERIFY — ai-citation-verifier:
+confirm section numbers, effective date (Jan. 1, 2024), and operative text; these are recent
+and must not be paraphrased from memory]].
+**Application:** The covenant restrains the engineer from "engaging in a lawful profession,
+trade, or business" — working as an engineer for a competitor — squarely within § 16600(a).
+That the restraint was bought with a $25,000 retention bonus rather than imposed at hire does
+not matter: § 16600 voids the restraint by its terms and contains no "separately supported by
+consideration" exception. The bonus goes at most to a restitution/failure-of-consideration
+theory (see § II), not to enforceability of the covenant.
+**Conclusion:** The covenant is void under § 16600 as applied to this at-will engineer
+(Likely — high confidence), on the assumption that California law governs.
+
+#### II. Attempting to enforce a void California noncompete carries affirmative exposure
+**Conclusion:** Suing to enforce is not merely futile; it may expose the client to
+liability (Probable — medium confidence).
+**Rule:** The 2023 amendments created employee-side remedies for attempts to enforce or
+impose void noncompetes, commonly cited as Bus. & Prof. Code § 16600.5 [[VERIFY —
+ai-citation-verifier: confirm section number, the private right of action, and the fee/damages
+provisions]]. [[VERIFY: no supporting quotation located — locate and paste the operative text
+creating the cause of action and remedies before advising the client on downside exposure.]]
+**Explanation:** Independent of the new statute, an attempt to enforce a facially void
+restraint has historically drawn UCL (§ 17200) and, in some cases, tortious-interference or
+fee exposure. [[VERIFY — ai-citation-verifier: locate current authority; do not assert a
+specific case without a pin cite.]]
+**Application:** Filing to enforce the covenant would invite a cross-claim under the 2023
+remedies provision and a fee demand. The retention bonus is better addressed, if at all,
+through a restitution demand framed on failure of consideration — not through covenant
+enforcement.
+**Conclusion:** Recommend against enforcement litigation; evaluate a narrow restitution
+theory on the bonus separately (Probable — medium confidence).
+
+### Counterarguments & Unfavorable Authority
+- **"The bonus is separate consideration, so this isn't a hire-condition noncompete."**
+  Surfaced and rejected: § 16600 turns on the restraint's effect, not on what was exchanged
+  for it. No California authority located recognizing a consideration-based carve-out.
+- **Choice-of-law / forum-selection clause pointing to a noncompete-friendly state.** If the
+  agreement selects another state's law/forum, expect the client to raise it. The 2023
+  amendments were designed to reach exactly this move (void "regardless of where signed"),
+  but the interaction with an out-of-state forum clause is fact-specific — flagged as an
+  open question, not resolved here.
+
+### Risk Assessment
+- **Overall conclusion:** The noncompete is very likely unenforceable; affirmative
+  enforcement is affirmatively risky.
+- **Confidence level:** High on unenforceability; Medium on the scope of the client's
+  downside for attempting enforcement (turns on unverified 2023-amendment text).
+- **Key risks:** (1) undiscovered choice-of-law/forum clause; (2) exact operative text and
+  effective dates of §§ 16600.1 / 16600.5 unverified; (3) Edwards controlling passage not yet
+  confirmed at a pin cite.
+- **Open questions:** governing law of the agreement; whether any § 16601 goodwill-sale theory
+  is even colorable (facts suggest not); restitution viability on the $25k.
+- **Unsettled-law flags:** the 2023 statutory amendments are recent; confirm current section
+  numbering and any 2024–2026 judicial gloss before relying.
+
+### Jurisdictional Source Checklist
+| Source tier | Consulted? | Notes |
+|-------------|-----------|-------|
+| Constitution | N | N/A to this question |
+| Statute/Code | Y | Cal. Bus. & Prof. Code § 16600(a) quoted verbatim; §§ 16600.1/16600.5, 16601–16602.5 cited, all [[VERIFY]] |
+| Rules | N | N/A |
+| Controlling case law | Y (identified) | Edwards v. Arthur Andersen LLP, 44 Cal. 4th 937 (2008) — cited; controlling passage flagged [[VERIFY: no supporting quotation located]] |
+| Secondary (treatise/practice guide) | N | No controlling authority found needed beyond statute + Edwards for the core question; Witkin/Rutter not consulted this pass — flag if partner wants secondary support |
+
+### Research Log (AI-assisted work product support)
+| Source | Query / Search | Result summary | Date |
+|--------|----------------|----------------|------|
+| Primary statutory text (from knowledge, unverified) | "Cal. Bus. & Prof. Code 16600 noncompete void" | § 16600(a) operative text reproduced; exceptions §§ 16601–16602.5 identified | 2026-07-20 |
+| Case identification (unverified) | "California Supreme Court reject narrow restraint noncompete" | Edwards v. Arthur Andersen identified as leading authority; NOT opened in Westlaw/Lexis this pass | 2026-07-20 |
+| — | 2023 amendment sections | §§ 16600.1 / 16600.5 identified by number; text and effective date NOT confirmed | 2026-07-20 |
+
+### Verification Notes
+- **Citations flagged for ai-citation-verifier pass:** 5 — § 16600(a); §§ 16600.1/16600.5;
+  §§ 16601–16602.5; Edwards v. Arthur Andersen LLP; § 17200/UCL reference.
+- **Direct quotations included:** 1 verbatim (§ 16600(a)). Two holdings deliberately NOT
+  quoted and flagged [[VERIFY: no supporting quotation located]] (Edwards; § 16600.5 remedy).
+- **Before this memo is relied on, filed, or quoted, run it through
+  skills/operations/ai-citation-verifier.md.** See
+  knowledge-base/best-practices/ai-hallucination-sanctions-2026.md for the Q1 2026 context.
+
+### Disclaimers
+- AI-assisted. A licensed attorney must review every citation, quotation, and conclusion.
+- Every case citation and statutory reference must be independently verified in Westlaw,
+  Lexis, Bloomberg Law, or the official publisher.
+- Analysis assumes California law governs; a choice-of-law/forum clause may change it.
+- Config note: firm.citation_style resolved to Bluebook (default); firm.research_log_format
+  applied. **Absent key surfaced:** client.research_memo_overrides.{Halden} not set — no
+  client-specific citation or AI-disclosure override applied.
+
+### Firm Config Keys Used
+- firm.name, firm.citation_style (Bluebook), firm.memo_format_default (partner — matched
+  input), firm.licensure_jurisdictions (California present → no unfamiliar-jurisdiction flag),
+  firm.research_log_format (applied), firm.ethics.holdings_require_verbatim_support (enforced —
+  see the two [[VERIFY: no supporting quotation located]] flags).
+```
+
+*Why this example and not a happy path:* the temptation on a "well-known" question like California noncompetes is to state the holding of Edwards in a confident sentence and move on. The holdings traceability rule exists precisely to stop that. Here the statute — short, settled, reproducible — is quoted verbatim so the partner can read the operative text without opening Westlaw; but the case holding and the recent 2023-amendment remedy, which cannot be reproduced verbatim with confidence at runtime, are flagged `[[VERIFY: no supporting quotation located]]` rather than paraphrased into a rule statement that reads as verified. That is the honest posture: quote what you can support verbatim, flag what you cannot, and never let a plausible paraphrase of a holding pass as located authority. The five citations are all queued for the ai-citation-verifier handoff before the memo is relied on.

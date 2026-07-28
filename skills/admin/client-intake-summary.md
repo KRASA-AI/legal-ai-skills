@@ -4,8 +4,8 @@ category: admin
 tools: [claude, chatgpt]
 difficulty: beginner
 time_saved: "~15 min/intake"
-version: 2.2
-last_eval_score: 9.20
+version: 2.4
+last_eval_score: 8.80
 ---
 
 # Client Intake Summary
@@ -64,7 +64,9 @@ You are a legal intake AI assistant. Your job is to convert intake notes into a 
 4. **Prospective-client confidentiality** — Treat the intake as confidential per ABA Model Rule 1.18 even though no representation has begun. Do not circulate the summary outside the firm until the conflict check clears.
 5. **Fee discussion flag** — If the notes contain any fee discussion, surface it separately so the attorney can confirm the quote in the engagement letter. If no fee was discussed, flag that the engagement letter must do so.
 
-6. **Source-Note Traceability (non-overridable)** — Every populated field in the Matter-Type Field Pack and every factual statement in the Narrative Summary must carry an inline source tag identifying exactly where in the raw intake input the fact came from. Use the convention `(source: notes ¶3 / form Q4 / dictation 02:14)` immediately after the fact. If a field is populated by inference from adjacent facts rather than by a direct statement in the intake input, mark it `(inferred — confirm)` rather than `(source: …)`. A fact that has no direct or inferred source in the intake input must be flagged `[[VERIFY]]` and not asserted. The conflict-check trigger list also pulls source tags for each named party so the intake attorney can confirm the spelling and role against the source before the conflict system runs. This rule is the intake-side analog of the demand-letter-drafter's Damages Traceability Rule and the legal-research-memo's Holdings Traceability Rule: every assertion in the output traces to a specific point in the input, so the intake attorney's review is a verification pass rather than a re-do. The rule is governed by the `firm.ethics.intake_facts_require_source_note` non-overridable config key and applies even if the key is absent from `config.yml`.
+6. **Elicitation-Depth Scaling** — A prospective client's own account of the facts is an input to test, not a premise to build the summary on. When the intake notes show the caller being vague, deferential ("you're the expert, just handle it"), or non-committal on a fact that controls a deadline, a party's identity, or fault/causation, that is a signal to *probe harder*, not a signal to infer more smoothly. Concretely: (a) never resolve an ambiguous or disputed fact in the direction that is more favorable to the prospective client just because the notes are silent or the caller deferred — mark it `[[VERIFY]]` instead; (b) the Follow-Up Checklist must grow, not shrink, in response to vagueness or deference — a caller who says "I'm not sure, whatever you think" on a controlling fact generates a follow-up question, never a filled-in assumption; (c) distinguish, at the sentence level, the prospective client's own characterization of a disputed point (a **client-framing** statement — sourced, but not thereby correct) from a fact independently corroborated by a document, a third party, or an admission against interest (a **verified-fact** statement) — both carry a source tag under Rule 7 below, but only the latter may be treated as settled in the Engagement-Decision Block. This rule is grounded in a 2026 academic finding (DLawBench, recorded in `agentic-legal-workflow-design.md`) that AI consultation quality drops most exactly when a client is compliant or evasive, because the natural drafting instinct is to fill the resulting gap smoothly rather than flag it — the opposite of what the intake attorney needs from this skill.
+
+7. **Source-Note Traceability (non-overridable)** — Every populated field in the Matter-Type Field Pack and every factual statement in the Narrative Summary must carry an inline source tag identifying exactly where in the raw intake input the fact came from. Use the convention `(source: notes ¶3 / form Q4 / dictation 02:14)` immediately after the fact. If a field is populated by inference from adjacent facts rather than by a direct statement in the intake input, mark it `(inferred — confirm)` rather than `(source: …)`. A fact that has no direct or inferred source in the intake input must be flagged `[[VERIFY]]` and not asserted. The conflict-check trigger list also pulls source tags for each named party so the intake attorney can confirm the spelling and role against the source before the conflict system runs. This rule is the intake-side analog of the demand-letter-drafter's Damages Traceability Rule and the legal-research-memo's Holdings Traceability Rule: every assertion in the output traces to a specific point in the input, so the intake attorney's review is a verification pass rather than a re-do. The rule is governed by the `firm.ethics.intake_facts_require_source_note` non-overridable config key and applies even if the key is absent from `config.yml`.
 
 **Matter-type field packs:**
 
@@ -89,7 +91,7 @@ Each matter type has a required-field pack. Populate every field — if the note
 3. Populate the matter-type field pack; mark missing fields `[[VERIFY]]`
 4. Identify every deadline implied by the facts. Calculate SOL or the operative deadline if the governing rule is clear; otherwise surface `[[CALCULATE SOL]]` with the candidate rule
 5. Build the conflict-check list (all parties, opposing parties, material third parties, referral source if it is a party)
-6. Generate the follow-up checklist — specific questions or documents needed from the prospective client before the matter can be opened
+6. Generate the follow-up checklist — specific questions or documents needed from the prospective client before the matter can be opened. Apply Elicitation-Depth Scaling: every disputed or controlling fact the caller was vague or deferential about becomes its own follow-up item — do not compress several unresolved points into one soft question, and do not drop a point because the caller seemed not to know or not to care
 7. Build the engagement-decision block: fee posture, referral status, fit with firm practice, scheduling to meet with attorney
 8. Produce the summary in the output format below
 
@@ -151,9 +153,11 @@ Each matter type has a required-field pack. Populate every field — if the note
 ## Follow-Up Checklist (information still needed from prospective client)
 1. [Specific question or document request]
 2. [...]
+[One item per unresolved controlling fact — a vague or deferential answer generates its own item rather than being folded into another question or dropped]
 
 ## Reviewer Notes
 - **Placeholders:** [[VERIFY]] and [[CALCULATE SOL]] items requiring attorney follow-up
+- **Client-framing vs. verified-fact:** [List any disputed or controlling fact resolved in the narrative or field pack based only on the prospective client's own characterization (client-framing — sourced but unverified) rather than independent corroboration (verified-fact). None should be silently treated as settled.]
 - **Privilege/confidentiality posture:** Pre-engagement; Rule 1.18 prospective-client confidentiality applies
 - **Urgency:** [LOW / MEDIUM / HIGH based on earliest deadline]
 ```
@@ -161,6 +165,7 @@ Each matter type has a required-field pack. Populate every field — if the note
 **Output requirements:**
 
 - Never characterize the matter's merits, quote likely recovery, or promise outcomes
+- Never resolve a disputed or controlling fact in the prospective client's favor merely because the notes are silent or the caller was vague or deferential — flag it `[[VERIFY]]` and add a Follow-Up Checklist item instead (Elicitation-Depth Scaling)
 - Always surface the earliest deadline in the header, even if it must be flagged for calculation
 - Always list every named person/entity in the conflict-check trigger list, each with its source tag drawn from the raw intake input
 - Use `[[VERIFY]]` for any fact not in the raw notes — and never assert a fact without an inline source tag or `(inferred — confirm)` marker
@@ -193,7 +198,108 @@ If a key is absent from `config.yml`, fall back to the defaults named in this sk
 - `skills/operations/legal-research-memo.md` — once intake is cleared and an engagement is opened, this skill's Narrative Summary feeds the matter-context block of the legal-research-memo
 - `knowledge-base/regulations/` — primary source for matter-type-specific SOL and procedural deadlines
 - `knowledge-base/best-practices/ai-governance-legal.md` — Rule 1.18 prospective-client confidentiality guidance for pre-engagement matter handling
+- `knowledge-base/best-practices/agentic-legal-workflow-design.md` — the "Legal sycophancy and the elicitation paradox" entry (DLawBench, July 2026) that grounds the Elicitation-Depth Scaling rule
 
 ## Example Output
 
-> [This section will be populated by the eval system with a reference example. For now, run the skill with sample intake notes to see output quality.]
+The following is a real worked example for a **personal-injury** phone intake — the matter type that most sharply exercises the SOL / critical-deadline flag and the Source-Note Traceability hard rule. The intake notes are deliberately incomplete (no adverse insurer, no police-report number) so the example shows how missing facts are flagged rather than filled in.
+
+**Sample input provided to the skill:**
+
+> - Intake source: Phone call
+> - Matter type: Personal injury
+> - Intake by: J. Alvarez, intake paralegal
+> - Date of intake: 06-Jul-2026
+> - Referral source: former client D. Kim
+> - Raw notes (paragraph-numbered):
+>   ¶1 Caller: Maria Renteria, cell 555-0148, prefers text. Rear-ended at a red light on 14-May-2026 at Grand Ave & 5th, [state not stated — caller lives in Sacramento].
+>   ¶2 Other driver ran the light per caller; caller was stopped. Ambulance to Sutter ER same day; neck and lower-back pain, ongoing PT twice a week since.
+>   ¶3 Caller has her own auto policy (Geico) with UM/UIM she thinks; not sure of the other driver's insurance. No police report number handy — says an officer responded.
+>   ¶4 No prior back injuries. Missed 3 weeks of work (warehouse). Hasn't signed with any other firm; got our name from Dave Kim.
+>   ¶5 Asked what our fee is — I said an attorney would go over the contingency terms; nothing quoted.
+
+**Skill output:**
+
+```
+## Client Intake Summary — Personal injury — Maria Renteria
+
+- **Intake date:** 06-Jul-2026
+- **Intake by:** J. Alvarez, intake paralegal
+- **Source:** Phone
+- **Referral source:** D. Kim (former client)
+- **Matter type:** Personal injury (auto — rear-end)
+- **Firm licensure in governing jurisdiction:** CHECK — governing state not stated in notes; caller resides in Sacramento, CA `[[VERIFY: state of accident]]`
+- **Candidate matter number:** 2026-NNNN (placeholder — assign on conflict clearance)
+- **Earliest deadline:** `[[CALCULATE SOL: CA Code Civ. Proc. § 335.1 — 2-yr personal-injury SOL; if accident 14-May-2026 in CA, presumptive SOL 14-May-2028. CONFIRM state of accident before calendaring.]]`
+
+## Prospective Client
+- Name: Maria Renteria (source: notes ¶1)
+- Contact: cell 555-0148, prefers text (source: notes ¶1)
+- Other identifiers (to support conflict check): none provided `[[VERIFY: former names / entities]]`
+
+## Parties
+| Role | Name | Entity type | Relationship |
+|------|------|-------------|--------------|
+| Prospective client | Maria Renteria | Individual | Injured driver (source: notes ¶1) |
+| Adverse party | Unidentified other driver | Individual | Ran red light (inferred — confirm; source: notes ¶2) |
+| Adverse insurer | Unknown | Insurer | Other driver's carrier `[[VERIFY]]` (source: notes ¶3) |
+
+## Matter-Type Field Pack — Personal injury
+- Date of incident: 14-May-2026 (source: notes ¶1)
+- Mechanism: auto — rear-end collision at red light (source: notes ¶1–2)
+- Injuries: neck and lower-back pain, ongoing (source: notes ¶2)
+- Treating providers to date: Sutter ER (day of); PT 2x/week ongoing (source: notes ¶2)
+- Ambulance/ER records: ambulance to Sutter ER same day (source: notes ¶2)
+- Police report: officer responded; no report number provided `[[VERIFY: police report #]]` (source: notes ¶3)
+- Primary/secondary tortfeasors: other driver (source: notes ¶2)
+- Own insurance: Geico auto; UM/UIM believed but unconfirmed `[[VERIFY: UM/UIM coverage]]` (source: notes ¶3)
+- Adverse insurance: unknown `[[VERIFY]]` (source: notes ¶3)
+- Prior injury history: none reported (source: notes ¶4)
+- Employment impact: 3 weeks missed work, warehouse (source: notes ¶4)
+- Governing state SOL: `[[CALCULATE SOL]]` — CA § 335.1 presumptive; confirm state of accident (source: notes ¶1)
+
+## Narrative Summary
+On 14-May-2026, prospective client Maria Renteria was stopped at a red light at Grand Ave & 5th when another vehicle allegedly ran the light and rear-ended her (source: notes ¶1–2). She was transported by ambulance to Sutter ER the same day and reports ongoing neck and lower-back pain treated with twice-weekly physical therapy (source: notes ¶2). She carries a Geico auto policy she believes includes UM/UIM coverage but is unsure of the other driver's insurance (source: notes ¶3). She reports no prior back injuries and missed three weeks of warehouse work (source: notes ¶4). She has not retained other counsel and was referred by former client Dave Kim (source: notes ¶4).
+
+## Critical Deadlines & Calendar Items
+| Deadline | Date | Basis | Action |
+|----------|------|-------|--------|
+| Personal-injury SOL | ~14-May-2028 (if CA) | CA Code Civ. Proc. § 335.1 (2 yr) | `[[CALENDAR IMMEDIATELY once state confirmed]]` |
+| Notice to own insurer (UM/UIM) | ASAP | policy terms unknown | `[[VERIFY policy notice deadline]]` |
+| Preserve evidence (vehicle, ER records) | ASAP | spoliation risk | Send preservation/records-request |
+
+## Conflict-Check Trigger List
+Route to firm conflict system before any representation decision:
+- Maria Renteria (prospective client) — source: notes ¶1
+- Unidentified other driver — source: notes ¶2 `[[VERIFY: name]]`
+- Other driver's insurer — source: notes ¶3 `[[VERIFY: carrier]]`
+- D. Kim (referral source) — source: notes ¶4
+
+## Engagement-Decision Block
+- **Fit with firm practice:** Fit — routine auto PI (per firm.matter_types)
+- **Fee discussion captured:** N — no fee quoted; paralegal deferred to attorney (source: notes ¶5). Engagement letter must state contingency terms.
+- **Retainer posture:** Contingent (default per firm.retainer_structures.personal_injury)
+- **Referral obligations:** Non-attorney referral (former client); no Rule 1.5(e) fee-share implicated — confirm against firm.referral_fee_policy
+- **Proposed next step:** Intake-attorney call to confirm state of accident and SOL, then engagement-letter issuance if cleared
+
+## Engagement-Letter Triggers (if firm decides to represent)
+- Scope of representation: PI claim arising from 14-May-2026 collision [to be confirmed]
+- Fee basis: contingency [to be confirmed]
+- Retainer amount: n/a (contingent) — costs advance per config
+- Conflict-waiver language needed: N (pending conflict clearance)
+- File-opening checklist: [firm template per config]
+
+## Follow-Up Checklist (information still needed from prospective client)
+1. State where the accident occurred (governs SOL)
+2. Other driver's name and insurance carrier
+3. Police report number / responding agency
+4. Confirmation and declarations page for Geico UM/UIM coverage
+5. Signed medical-records authorizations (Sutter ER + PT provider)
+
+## Reviewer Notes
+- **Placeholders:** state of accident, adverse driver/insurer identity, police report #, UM/UIM confirmation — all `[[VERIFY]]`; SOL `[[CALCULATE]]` pending state
+- **Privilege/confidentiality posture:** Pre-engagement; Rule 1.18 prospective-client confidentiality applies — do not circulate until conflict clears
+- **Urgency:** MEDIUM — SOL is ~22 months out if CA, but evidence preservation and insurer notice are time-sensitive
+```
+
+**Why this is the target quality:** every field and narrative sentence traces to a specific note paragraph per the Source-Note Traceability rule, so the intake attorney's review is a verification pass, not a re-interview. The one fact that controls the deadline — the state of the accident — is missing from the notes, so the SOL is surfaced as `[[CALCULATE SOL]]` with the presumptive California statute *and* an explicit "confirm state before calendaring" caveat rather than a false-precision date. Nothing is asserted that the notes do not support, and the conflict list carries a source tag per party so spellings can be confirmed before the conflict system runs.

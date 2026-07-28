@@ -4,8 +4,8 @@ category: operations
 tools: [claude, chatgpt]
 difficulty: advanced
 time_saved: "~45 min per 100 documents"
-version: 1.1
-last_eval_score: 9.30
+version: 1.2
+last_eval_score: 8.80
 ---
 
 # Privilege Log Reviewer
@@ -189,4 +189,91 @@ If a key is absent from `config.yml`, fall back to the defaults named in this sk
 
 ## Example Output
 
-> [This section will be populated by the eval system with a reference example. For now, run the skill with a sample document and matter context to see output quality.]
+The worked example below is run on the hardest-to-classify document type in the anti-overclaim discipline: an **in-house counsel email with a third party on the chain and a mixed business/legal purpose**. It is chosen deliberately because it is exactly the pattern that produces sanctionable overclaims — an attorney is present, so the intuitive call is PRIVILEGED, but the primary-purpose and in-confidence factors are both compromised. The example shows the skill resolving to **ESCALATE** rather than asserting privilege, honoring the **no-high-confidence-with-medium-factor** rule and the **no-privileged-quote-in-log** rule: the Driver Evidence cites metadata fields and the subject line, never the body content, and the classification is never rendered at High confidence when two framework factors are Medium/compromised.
+
+**Input provided (verbatim from the user):**
+
+> One document. Bates HALDEN_0004417. Email dated 9/12/2025. From: Priya Raman (VP Sales,
+> Halden). To: Dave Okafor (CEO, Halden); cc: Lauren Vos (in-house Associate GC, Halden) and
+> Sam Trilby (Halden's outside sales consultant at a marketing agency). Subject: "Q3 pricing
+> deck + legal read on the exclusivity clause." Body mixes a pricing-strategy discussion for
+> the Q3 deck with a paragraph asking Lauren whether the proposed exclusivity clause creates
+> antitrust risk. Matter: Halden v. Trenton, breach/antitrust counterclaim, federal, N.D. Ohio.
+> Counsel list: Lauren Vos = Halden in-house Associate GC (represents Halden). Sam Trilby =
+> outside marketing consultant, NOT a Kovel agent, no common-interest agreement. 502(d) order:
+> unknown. No prior privilege call.
+
+**Reviewer-facing output:**
+
+```
+## Privilege Review — HALDEN_0004417
+
+- **Classification:** ESCALATE — Human review required
+- **Privilege type (if any):** Partial — attorney-client MAY attach to the legal-read
+  paragraph only; the pricing-strategy content is presumptively business (N/A otherwise)
+- **Confidence:** Low
+- **502(d) order in place:** Unknown — [reviewer to confirm before production; treat as
+  absent, which under firm.privilege_defaults.rule_502d_orders downgrades close-call
+  confidence one level]
+
+## Framework Analysis
+1. Communication: Yes — email among identified senders/recipients.
+2. Attorney party: Yes — Lauren Vos (Halden in-house Associate GC, represents Halden) is
+   cc'd. She is a recipient, not the author, and is one of four people on the chain — an
+   attorney's presence on a distribution list is not itself privilege.
+3. In confidence: COMPROMISED — Sam Trilby (outside marketing consultant) is a cc recipient
+   and is NOT a Kovel agent and NOT covered by any common-interest/joint-defense agreement per
+   the counsel list. A non-covered third party on the chain is a waiver flag for any
+   attorney-client claim over the whole document.
+4. Primary purpose: MIXED — the subject line itself pairs a "Q3 pricing deck" (business) with
+   a "legal read on the exclusivity clause" (legal). In-house counsel communications require a
+   primary-purpose (not merely "a purpose") analysis; a mixed email cc'ing a non-lawyer
+   consultant does not cleanly meet it.
+5. Work product: Does not apply on its face — authored by a VP of Sales for a pricing deck,
+   not by or at the direction of an attorney in anticipation of litigation. The antitrust
+   question references a risk, but the document was not prepared because of the litigation.
+6. Waiver indicators: Third-party (Trilby) presence without a shield — potential
+   subject-matter/selective-disclosure waiver if the legal paragraph is treated as privileged
+   yet was shared with a non-covered consultant.
+
+## Driver Evidence
+- Metadata: cc field contains "Sam Trilby (outside marketing consultant)" — drives the
+  in-confidence waiver flag (Factor 3). Cited from the recipient list, not the body.
+- Metadata: cc field contains "Lauren Vos (Associate GC)" — establishes attorney presence
+  (Factor 2) but as a cc, not the author or a directive participant.
+- Subject line (metadata, non-content): "Q3 pricing deck + legal read on the exclusivity
+  clause" — drives the mixed primary-purpose finding (Factor 4). No body text quoted.
+- Author role: "VP Sales" — drives the work-product-does-not-attach finding (Factor 5).
+- 502(d): Unknown per input — applied the one-level confidence downgrade.
+
+## Escalation Note
+A licensed attorney must decide two questions this skill will not guess. First, whether the
+antitrust-risk paragraph is severable and independently privileged as a client-to-counsel
+request for legal advice, given that it travels in the same email as ordinary
+pricing-strategy content and was cc'd to a non-covered outside consultant (Trilby) — the
+consultant's presence may waive the attorney-client claim over that paragraph or defeat
+"in confidence" entirely. Second, if the paragraph is severable and the waiver is avoided,
+whether the correct call is REDACT (produce the pricing content, redact and log the legal
+paragraph by location) rather than withhold-in-full. Do not withhold this document in full on
+an attorney-client theory without resolving the Trilby-waiver question first; that is the
+overclaim this classification is designed to prevent.
+
+## Disclaimers
+- This classification is AI-assisted and must be confirmed by a licensed attorney before the
+  document is withheld, produced, or logged.
+- No privileged content has been reproduced above. If the reviewer believes a quoted excerpt
+  is needed to make the severability/redaction call, the attorney should regenerate the entry
+  with the relevant portion explicitly authorized.
+- firm.disclaimers.privilege_review applied.
+
+## Firm Config Keys Used / Absent
+- firm.name → review header. firm.matter_number_format → matter tag.
+  firm.privilege_defaults.kovel_agent_register → checked; Trilby NOT listed (drives Factor 3).
+  firm.privilege_defaults.common_interest_agreements.{Halden-v-Trenton} → checked; no
+  agreement covering Trilby.
+- **Absent / unknown surfaced in Driver Evidence:** firm.privilege_defaults.rule_502d_orders
+  .{Halden-v-Trenton} unknown → treated as absent, confidence downgraded one level.
+  firm.privilege_defaults.ai_privilege_posture not implicated (no AI-generated draft here).
+```
+
+*Why this example and not a happy path:* the classic privilege-log sanction is the reflexive PRIVILEGED call on any email with a lawyer on it. This document has a lawyer on it — and is still not a clean privilege call, because (a) the attorney is a cc rather than the author, (b) a non-Kovel outside consultant sits on the same chain, and (c) the purpose is mixed on the face of the subject line. The skill correctly refuses to assert privilege, routes to ESCALATE with a specific question (severability + the Trilby-waiver), and — critically — builds every Driver Evidence line from metadata and the subject line, never from the body, so the review itself cannot become the vehicle for a subject-matter waiver. The no-high-confidence-with-medium-factor rule fires (two compromised factors → confidence forced to Low, not High), and the unknown 502(d) status triggers the one-level downgrade rather than an optimistic assumption.

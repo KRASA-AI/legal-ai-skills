@@ -5,7 +5,7 @@ tools: [claude, chatgpt]
 difficulty: intermediate
 time_saved: "~45 min/brief"
 version: 1.5
-last_eval_score: 9.30
+last_eval_score: 9.00
 ---
 
 # AI Citation & Quote Verifier
