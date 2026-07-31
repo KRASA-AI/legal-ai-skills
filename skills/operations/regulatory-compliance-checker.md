@@ -4,8 +4,8 @@ category: operations
 tools: [claude, chatgpt]
 difficulty: intermediate
 time_saved: "~45 min/review"
-version: 2.1
-last_eval_score: 8.60
+version: 2.2
+last_eval_score: 8.80
 ---
 
 # Regulatory Compliance Checker
@@ -220,4 +220,197 @@ If a key is absent from `config.yml`, fall back to the defaults named in this sk
 
 ## Example Output
 
-> [This section will be populated by the eval system with a reference example. For now, run the skill with a sample DPA and GDPR + CCPA as frameworks to see output quality.]
+The worked example below reviews a vendor's Data Processing Addendum for a workplace-wellness SaaS product against **GDPR and CCPA/CPRA together** — the two-framework case that exercises the Provision Text Traceability rule across two different regulatory drafting styles, and the Cross-Regulatory Conflicts block. The DPA is deliberately vendor-drafted and gap-ridden in the way real vendor paper actually is: it says nothing about deletion at the end of processing, and its use-limitation clause quietly lets the vendor use the data for its own analytics — a use-limitation violation that would strip its CCPA service-provider status. The example also shows the rule's honest fallback: the GDPR provisions are short, stable, and quoted verbatim; the CCPA/CPRA provision is flagged `[[VERIFY: provision text]]` because the skill does not have confidently-current statutory text for a definition section that has been renumbered by rulemaking, rather than risk quoting stale or wrong text.
+
+**Input provided to the skill:**
+
+> - Document: "PulseWell Data Processing Addendum," v.2025-09, vendor-drafted, excerpted below
+> - Document type: DPA (attached to a workplace-wellness survey SaaS subscription)
+> - Applicable regulations: "GDPR Articles 9, 28; CCPA/CPRA sensitive-PI and service-provider
+>   provisions" (user-specified, article-level where the user knew it)
+> - Jurisdictions: employer's EU workforce (Germany, France) and California workforce
+> - Processing context: PulseWell collects self-reported employee health-condition survey data
+>   (special category under GDPR Art. 9; sensitive PI under CPRA) from ~5,000 employees;
+>   no cross-border-transfer mechanism mentioned in the DPA
+> - Risk tolerance: not specified
+> - Existing controls: not specified
+> - Relationship context: not specified
+>
+> **DPA excerpt (key sections; full text provided):**
+> - § 3.1 Sub-processors: "Vendor may engage sub-processors as reasonably necessary to provide
+>   the Services."
+> - § 3.2 Security: "Vendor will maintain commercially reasonable administrative, physical, and
+>   technical safeguards designed to protect Personal Data."
+> - § 4.1 Use of Data: "Vendor will use Personal Data solely to provide the Services **and for
+>   Vendor's internal analytics and product-improvement purposes**."
+> - § 6.1 Term: "This DPA is coterminous with the underlying Master Subscription Agreement."
+> - *[No section addresses deletion or return of data at the end of processing. No section
+>   addresses special-category/health data or a consent mechanism. No section restricts
+>   combining Personal Data with data from Vendor's other customers.]*
+
+**Skill output:**
+
+```markdown
+## Compliance Review — PulseWell Data Processing Addendum v.2025-09 — 2026-07-28
+
+- **Document:** PulseWell Data Processing Addendum, v.2025-09, vendor-drafted
+- **Document type:** DPA (attached to workplace-wellness SaaS subscription)
+- **Frameworks checked:** GDPR Arts. 9, 28; CCPA/CPRA sensitive-PI and service-provider
+  provisions (as specified by user; article/section precision applied where available)
+- **Jurisdictions:** Controller = employer (EU workforce: Germany, France; California
+  workforce); Processor = PulseWell, Inc.
+- **Processing context:** Self-reported employee health-condition survey data — special
+  category (GDPR Art. 9) / sensitive PI (CPRA) — approx. 5,000 data subjects; no
+  cross-border-transfer mechanism identified in the document
+- **Risk posture applied:** Moderate — `firm.compliance_defaults.risk_posture` not set in
+  `config.yml`; skill default applied. **Set this key** so future reviews reflect the firm's
+  actual posture rather than the skill default.
+- **Existing controls noted:** None supplied — assumption flagged in Reviewer Notes
+- **Overall compliance posture:** Weak
+- **Escalation triggers hit:** 2 (see below)
+
+## Executive Summary
+This DPA has the shape of a standard vendor template but is missing the two provisions that
+matter most for this processing context. It has no deletion/return-of-data provision at all
+(a GDPR Art. 28(3)(g) baseline requirement), and its use-limitation clause — the sentence that
+is supposed to be the entire basis for the vendor's CCPA service-provider status — quietly
+carves out an exception letting the vendor use the data for its own analytics. Because the
+processing involves employee health data, the document's silence on a special-category lawful
+basis is not a drafting nicety; it is an escalation trigger under both frameworks in scope.
+This document is not ready to sign at any risk posture without the two Critical fixes below.
+
+## Escalation Triggers
+1. **Special-category data processed without a GDPR Art. 9 lawful-basis framework.** The DPA
+   contains no consent mechanism, no reference to explicit consent, and no other Art. 9(2)
+   exception for the health-condition survey data described in the processing context.
+   Provision: GDPR Art. 9(1)–(2)(a). Required action: do not permit processing of the wellness
+   survey data to begin until the underlying employee consent flow (or another Art. 9(2)
+   exception) is confirmed and referenced in the DPA.
+2. **Sensitive PI processed without a CPRA limit-use-or-disclosure mechanism.** The DPA's
+   § 4.1 use-limitation clause is undercut by its own "Vendor's internal analytics" carve-out,
+   leaving no operative restriction on Vendor's use of the sensitive PI. Required action:
+   remove the carve-out and add the CPRA right-to-limit-use language before this DPA is relied
+   on to support the employer's own CPRA compliance for California employees.
+
+## Critical Findings
+
+### Finding 1: No deletion or return of data at the end of processing
+- **Framework and provision:** GDPR Art. 28(3)(g)
+- **Regulatory text:** > "[the processor] at the choice of the controller, deletes or returns
+  all the personal data to the controller after the end of the provision of services relating
+  to processing, and deletes existing copies unless Union or Member State law requires storage
+  of the personal data;"
+- **Requirement:** The processor contract must give the controller the choice to have personal
+  data deleted or returned at the end of the engagement, with deletion of existing copies
+  absent a legal retention requirement.
+- **Document says:** "[Document is silent on this requirement — § 6.1 addresses only the
+  DPA's term, not the disposition of data at the end of that term.]"
+- **Gap:** No deletion-or-return mechanism exists anywhere in the document. On termination,
+  the employer has no contractual right to compel deletion or return of ~5,000 employees'
+  health-condition survey data.
+- **Risk rating:** Critical
+- **Remediation — suggested language:**
+  > "Upon termination or expiration of the Agreement, and at Controller's written election,
+  > Processor shall either (a) return all Personal Data to Controller in a commonly-used
+  > format, or (b) delete all Personal Data and certify such deletion in writing, in either
+  > case within thirty (30) days, and shall delete existing copies unless applicable law
+  > requires Processor to retain the Personal Data, in which case Processor shall isolate and
+  > protect such data from further processing."
+- **Remediation — operational:** `[[BUSINESS OWNER TO CONFIRM: does the employer want a
+  standing default of deletion or return, and what retention period, if any, applies to
+  historical wellness-survey analytics the employer itself wants to keep?]]`
+
+### Finding 2: Use-limitation carve-out defeats CCPA/CPRA service-provider status
+- **Framework and provision:** CCPA/CPRA — service-provider use-limitation requirement
+  (commonly cited as Cal. Civ. Code §1798.140(ag))
+- **Regulatory text:** `[[VERIFY: provision text — paste the current, renumbered §1798.140(ag)
+  service-provider definition verbatim before relying on this citation. The CPRA rulemaking
+  process has amended and renumbered several §1798.140 definitions since 2023, and the skill
+  does not have confidently-current text at runtime. Do not treat the section number above as
+  settled without confirming it against the current statute.]]`
+- **Requirement (paraphrased, pending verbatim confirmation):** A service provider must limit
+  its use of personal information to the specific business purpose(s) disclosed in the
+  contract and must not use the personal information for the service provider's own
+  independent purposes, including its own analytics or product-improvement, without
+  qualifying as a "business" for that use — which triggers separate, more burdensome
+  obligations.
+- **Document says:** "Vendor will use Personal Data solely to provide the Services **and for
+  Vendor's internal analytics and product-improvement purposes**." (§ 4.1)
+- **Gap:** The "and for Vendor's internal analytics" clause is not a business-purpose
+  limitation — it is an open-ended, vendor-favorable carve-out. As drafted, § 4.1 does not
+  meet the "solely" standard the service-provider exemption depends on, which risks
+  reclassifying PulseWell as a "third party" for this processing and defeating the employer's
+  ability to rely on the service-provider exemption.
+- **Risk rating:** Critical
+- **Remediation — suggested language:**
+  > "Vendor shall use Personal Data solely to provide the Services described in the Agreement
+  > and for no other purpose, including no use for Vendor's own independent business purposes,
+  > and shall not combine Personal Data received from Controller with personal information
+  > Vendor receives from another source, except as permitted under Cal. Civ. Code §1798.140
+  > (or its successor section)."
+- **Remediation — operational:** None required if the language fix is adopted; no
+  `firm.compliance_defaults.clause_templates.ccpa_service_provider` template is configured in
+  `config.yml`, so this is freshly drafted rather than pulled from a firm-approved template —
+  **set this key** so future CCPA service-provider findings use firm-approved language.
+
+## High-Risk Findings
+None identified beyond the two Critical findings above at this pass; § 3.1 (sub-processor
+engagement without a named sub-processor list or flow-down obligation) is a Medium finding —
+see below — because the wellness-survey processing context does not yet indicate a
+sub-processor is in use.
+
+## Medium & Low-Risk Findings
+| # | Framework | Provision | Finding | Risk | Remediation |
+|---|-----------|-----------|---------|------|--------------|
+| 1 | GDPR | Art. 28(3)(a)–(d) | § 3.1 permits sub-processor engagement without a named list, audit rights, or flow-down obligation | Medium | Add a named/approved sub-processor list, audit rights, and a flow-down clause requiring sub-processors to accept the same obligations |
+| 2 | GDPR | Art. 32 | § 3.2 uses "commercially reasonable" safeguards language rather than the Art. 32 factors (pseudonymization, encryption, CIA triad, resilience, testing) | Medium | Replace with Art. 32-specific language naming encryption at rest/in transit and a testing cadence |
+
+## Framework-by-Framework Analysis
+
+### GDPR
+| Requirement | Provision | Document Status | Location in doc | Risk | Notes |
+|---|---|---|---|---|---|
+| Deletion/return at end of processing | Art. 28(3)(g) | Silent | N/A | Critical | Finding 1 |
+| Special-category lawful basis | Art. 9 | Silent | N/A | Critical (escalation trigger) | Escalation 1 |
+| Sub-processor authorization/list | Art. 28(3)(a)-(d) | Partial | § 3.1 | Medium | — |
+| Security measures | Art. 32 | Partial | § 3.2 | Medium | Generic language |
+
+### CCPA / CPRA
+| Requirement | Provision | Document Status | Location in doc | Risk | Notes |
+|---|---|---|---|---|---|
+| Service-provider use limitation | §1798.140(ag) (pending verbatim confirmation) | Conflict | § 4.1 | Critical | Finding 2 |
+| Sensitive-PI limit-use mechanism | CPRA sensitive-PI provisions | Silent | N/A | Critical (escalation trigger) | Escalation 2 |
+
+## Cross-Regulatory Conflicts
+| # | Frameworks in tension | Issue | Proposed hierarchy | Rationale |
+|---|------------------------|-------|----------------------|-----------|
+| 1 | GDPR Art. 9 vs. CPRA sensitive-PI provisions | No direct conflict — both require a consent/limit-use mechanism the DPA currently lacks, but via different lawful-basis mechanics (explicit consent under GDPR vs. a limit-use-or-disclosure right under CPRA) | Build to the stricter GDPR explicit-consent standard for the health-condition survey; as-applied, an explicit, specific, freely-given consent flow also satisfies the CPRA sensitive-PI limitation, so a single consent mechanism can close both gaps | GDPR's explicit-consent bar is higher than CPRA's opt-out/limit-use mechanic for the same category of data; satisfying the higher bar satisfies the lower one, avoiding two parallel consent flows |
+
+## Remediation Priority List
+| Rank | Finding | Risk | Effort | Next step |
+|------|---------|------|--------|-----------|
+| 1 | § 4.1 use-limitation carve-out (Finding 2) | Critical | Low | Strike "and for Vendor's internal analytics and product-improvement purposes"; insert drafted language |
+| 2 | No deletion/return provision (Finding 1) | Critical | Low | Insert drafted language at new § 6.2 |
+| 3 | No special-category/sensitive-PI consent mechanism (Escalations 1–2) | Critical | High | Escalate to GC and the employer's HR/benefits team — requires an operational consent flow, not just contract language |
+
+## Reviewer Notes
+- **Placeholders:** `[[BUSINESS OWNER TO CONFIRM]]` (Finding 1 retention preference);
+  `[[VERIFY: provision text]]` (Finding 2 — current §1798.140(ag) numbering)
+- **Assumptions applied:** Existing technical/organizational controls were not supplied and
+  are assumed unknown, not assumed adequate — this review does not credit PulseWell with any
+  unstated security posture. Risk tolerance defaulted to Moderate (config-absent).
+- **Framework-playbook gaps:** None — both named frameworks are on the built-in playbook list.
+- **Suggested follow-ups:** A DPIA is recommended given special-category data at ~5,000-subject
+  scale (GDPR Art. 35 threshold factors likely met); refer to the employer's privacy counsel.
+
+## Disclaimers
+- AI-assisted. A licensed attorney must review every finding and remediation before the
+  document is executed, posted, or relied on by the business.
+- Regulatory interpretation varies by jurisdiction and enforcement posture; the posture label
+  is firm-level guidance, not a legal opinion.
+- Framework playbooks reflect the regulation as it reads; pending rulemaking or guidance may
+  change the analysis. The CCPA/CPRA citation in Finding 2 is flagged for verification for
+  exactly this reason.
+```
+
+**Why this example and not a happy path:** the § 4.1 use-limitation carve-out is the kind of clause that reads as boilerplate on a skim — "solely to provide the Services and for Vendor's internal analytics" sounds like one continuous permission rather than two. The example shows the skill catching the second half as the operative defect, quoting the clause verbatim so the reviewer can see the carve-out for themselves, and correctly rating it Critical rather than Medium because it threatens the vendor's entire service-provider exemption. And where the skill does not have confidently-current statutory text — the CPRA's renumbered service-provider definition — it says so and flags `[[VERIFY]]` rather than quoting a plausible-looking but potentially stale section, which is exactly what the Provision Text Traceability rule's fallback is for.
