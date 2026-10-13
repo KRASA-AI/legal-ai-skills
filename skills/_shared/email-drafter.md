@@ -4,8 +4,8 @@ category: _shared
 tools: [claude, chatgpt]
 difficulty: beginner
 time_saved: "~10 min/use"
-version: 2.4
-last_eval_score: 8.50
+version: 2.5
+last_eval_score: 8.80
 ---
 
 # Email Drafter
@@ -47,6 +47,17 @@ Provide the following:
 8. **Action requested** — What you want the recipient to do and by when
 9. **Attachments** — Any documents to reference or attach
 
+**Minimum viable input: items 1, 3, and 5** (archetype, recipient, substance). Everything else has a safe default, so the skill drafts on the first pass instead of asking:
+
+- **Sender** → the signature block for the requesting user's role in `firm.signature_blocks`; if unknown, a `[Sender name / title]` placeholder.
+- **Matter context** → `[[VERIFY: matter #]]` in the subject tag when not supplied; never an invented number.
+- **Privilege posture** → the archetype's table default below. **"Unsure" resolves to the more protective reading**: if any reading of the facts would make the email privileged, draft it as privileged (footer on, candid content kept out of any cc to a third party) and name the uncertainty in Reviewer Notes. Over-marking costs a footer; under-marking can cost the privilege.
+- **Tone** → neutral-professional, adjusted by `firm.voice`.
+- **Action requested** → inferred from the substance; any date the notes do not state becomes `[[VERIFY: response date]]`.
+- **Attachments** → none, with a *Suggested attachments* line in Reviewer Notes.
+
+Every default applied is listed under **Defaulted inputs** in Reviewer Notes. The skill asks a question only when the archetype itself cannot be identified from the recipient and substance.
+
 ## Instructions
 
 You are a legal correspondence AI assistant. Your job is to produce a clean, professionally-toned email that fits the archetype, protects privilege where applicable, and never commits the firm or client to positions the draft cannot support.
@@ -70,7 +81,7 @@ You are a legal correspondence AI assistant. Your job is to produce a clean, pro
 
 **Process:**
 
-1. **Classify** — Confirm the archetype. If the user's description spans two archetypes (e.g., "email to our expert that I'll cc opposing counsel"), flag this as a privilege-breaking move and ask before proceeding.
+1. **Classify** — Confirm the archetype. If the user's description spans two archetypes (e.g., "email to our expert that I'll cc opposing counsel"), flag this as a privilege-breaking move and do **not** draft a single combined email. Draft the split instead: the privileged message to the privileged recipient, and a separate, stripped-down non-privileged message to the other recipient containing only what is safe on the record. Explain the split in Reviewer Notes so the sender can approve it or override it.
 2. **Privilege check** — If the email is privileged, include the firm's standard privilege footer (pull from `config.yml` or use the default below). If the email is non-privileged but substance includes protected content, flag the bleed-through.
 3. **Matter tagging** — Prepend the subject line with the matter number or case short-name as configured (default format: `[Matter 2026-042 — Smith v. Acme] Subject`).
 4. **Draft the email** — Use the archetype playbook's tone and inclusions. Keep paragraphs short. Lead with the ask. Put reasoning second. Close with the action and deadline.
@@ -87,6 +98,18 @@ You are a legal correspondence AI assistant. Your job is to produce a clean, pro
 - **Why.** This is the email-side analog of the traceability-rule pattern: a posture marker on every fact-sensitive sentence in the two archetypes where an unhedged assertion is the litigation-risk failure mode (admissions on the record, waiver of defenses, on-the-record characterization opposing counsel may later cite back).
 - **Surfacing.** Reviewer Notes carry a `**Hedges applied (per Archetype-Posture rule):**` block listing every contested-fact sentence and the hedge phrase chosen, so the reviewing attorney sees the posture decisions before send.
 - **Governance.** Codified by the `firm.ethics.hedge_required_for_opposing_and_third_party` config key; applies even if the key is absent from `config.yml`.
+
+**Common Failure Patterns (counter-exemplars — what a plausible-but-wrong draft looks like):**
+
+These are the near-misses this skill's rules exist to prevent. Each looks like a finished email; each is wrong. Check the draft against them before producing it.
+
+| Near-miss | The tell | Correct handling |
+|-----------|----------|------------------|
+| **The friendly admission** — an opposing-counsel email that concedes a contested fact to sound reasonable | A bare factual sentence about the dispute with no hedge, e.g. "We acknowledge the shipment arrived two days late" | Hedge it from `firm.hedge_phrase_library` or turn it into `[[VERIFY: hedge required — contested-fact assertion]]`; list it under *Hedges applied (per Archetype-Posture rule)* |
+| **The privileged cc** — a candid client update or expert instruction with a third party in the cc line | Strategy, risk assessment, or "between us" language plus any recipient outside the privilege circle | Split the email (Process step 1); never just add a footer and send to everyone |
+| **The confident placeholder-free draft** — notes said "around mid-March" or "about $40k" and the draft states a precise date or figure | A specific date, amount, statute, or case that is not word-for-word in the user's notes | Carry the uncertainty: `[[VERIFY: …]]`, never a plausible guess |
+| **The argued clerk email** — a court-staff email that slips in why the court should rule for the client | Persuasive language or characterisation of the merits in a scheduling or procedural request | Strip it to the transactional ask with caption and local-rule cite; argument belongs in a filing |
+| **The silent default** — a config key was missing and the draft quietly used a generic footer or signature | Generic footer or signature with nothing in Reviewer Notes explaining it | Name every absent key and every defaulted input in Reviewer Notes |
 
 **Default privilege footer (used if none provided in config):**
 
@@ -124,6 +147,7 @@ Best regards,
 - **Hedges applied:** [list any "without prejudice," "subject to verification," etc.]
 - **Hedges applied (per Archetype-Posture rule):** [for opposing-counsel and third-party archetypes, every contested-fact sentence and the hedge phrase chosen, per the non-overridable Archetype-Posture Hedging rule; "N/A — privileged or court-staff archetype" if the rule did not fire this run]
 - **Placeholders:** [[VERIFY]] items the sender must confirm before send
+- **Defaulted inputs:** [every fast-path default applied this run — sender, matter tag, privilege posture, tone, action date — and every absent config key; "none" if all inputs were supplied]
 - **Privilege concerns:** [any bleed-through, cc risks, or Kovel issues]
 - **Suggested attachments:** [documents to attach]
 - **Follow-up:** [calendar reminder date for response chase]
